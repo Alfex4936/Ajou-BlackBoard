@@ -4,7 +4,7 @@
 
 *개인 설정은 어디로 전송되지 않습니다. (로컬에서만 작동)*
 
-[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.0/ajoubb.zip)
+[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.1/AjouBB_v1.0.1.zip)
 
 위에 파일을 다운로드 한 후 `univ.yaml`을 notepad나 텍스트 편집기로 열어서
 
