@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import os
 import sys
@@ -96,12 +96,17 @@ class BlackBoard:
         # print(conf["user"]["cls"])
 
         now = datetime.now()
+        diffDate = now - timedelta(self.day)
+
         posts = 0
         os.system("cls")
         dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
-        print(f"{dayMessage} 이내 공지까지 불러오는 중...")
+        dayMessage = f"오늘부터 ~ {diffDate.month}월 {diffDate.day}일"
+        print(f"\n\n\t>>> {dayMessage}까지 공지 불러오는 중...")
 
         for ajouCls in self.conf["user"]["cls"]:
+            posts = 0
+
             classId, className = ajouCls.values()
             self.driver.get(classId)
 
@@ -142,14 +147,51 @@ class BlackBoard:
                 else:
                     break
 
+        # div.name > ng-switch > a
+
         if posts == 0:
             os.system("cls")
-            print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!")
+            print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
+
+        os.system("pause")
+        self.getFinals()
 
         self.driver.close()
         self.driver.quit()
         print("\n>>>")
         os.system("pause")
+
+    def getFinals(self):
+        os.system("cls")
+
+        print("\n\t해야할 목록을 불러오는 중...")
+        self.driver.get("https://eclass2.ajou.ac.kr/ultra/stream")
+        try:
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".js-title-link"))
+            )
+        finally:
+            pass
+
+        html = self.driver.page_source
+        soup = HTMLParser(html, "html.parser")
+        DueContents = soup.css(
+            "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.name > ng-switch > a"
+        )
+        dueDates = soup.css(
+            "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.content > span > bb-translate > bdi"
+        )
+        classNames = soup.css(
+            "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.context.ellipsis > a"
+        )
+
+        print("\n\t--- 제공 예정 ---")
+        n = len(DueContents)
+        for i in range(n):
+            print(classNames[i].text(strip=False))
+            print("\t" + DueContents[i].text(strip=False))
+            print("\t지정 마감일:" + dueDates[i].text(strip=False))
+            print()
 
 
 if __name__ == "__main__":
