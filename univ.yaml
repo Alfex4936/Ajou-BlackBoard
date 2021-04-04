@@ -1,0 +1,8 @@
+link:
+  bb: https://eclass2.ajou.ac.kr/ultra/course
+  web: https://eclass2.ajou.ac.kr/webapps/blackboard/execute/announcement?method=search&context=course_entry&handle=announcements_entry&mode=view&course_id=
+user:
+  cls:
+  id: 아이디
+  pw: 비밀번호
+  day: 1
