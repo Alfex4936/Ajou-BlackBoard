@@ -18,6 +18,7 @@ day옵션은 몇 일이내 공지까지 불러올 것인지 정한다. (ex. 0은
 
 `AjouBlackBoard`를 실행한다.
 
+![yaml](https://user-images.githubusercontent.com/2356749/113546947-f7c97c80-9627-11eb-9d5f-aba93dda4848.gif)
 
 ## 기능 1 - 공지
 
