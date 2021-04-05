@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 import os
 import sys
+import win32api
 import yaml
 from selectolax.parser import HTMLParser
 from selenium import webdriver
@@ -66,7 +67,7 @@ class BlackBoard:
                 EC.presence_of_element_located((By.ID, "_22_1termCourses_noterm"))
             )
         except Exception:
-            exit(1)
+            sys.exit(1)
         finally:
             pass
         # _22_1termCourses_noterm > ul > li:nth-child(2) > a
@@ -155,9 +156,7 @@ class BlackBoard:
 
         os.system("pause")
         self.getFinals()
-
-        self.driver.close()
-        self.driver.quit()
+        self.exit()
         print("\n>>>")
         os.system("pause")
 
@@ -193,6 +192,12 @@ class BlackBoard:
             print("\t지정 마감일:" + dueDates[i].text(strip=False))
             print()
 
+    def exit(self):
+        print("\n\t종료 중...")
+        self.driver.close()
+        self.driver.quit()
+        return True
+
 
 if __name__ == "__main__":
     #     if not Path("./univ.yaml").is_file():
@@ -209,4 +214,7 @@ if __name__ == "__main__":
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
     bb = BlackBoard()
+
+    win32api.SetConsoleCtrlHandler(bb.exit, True)
+
     bb.getNotices()
