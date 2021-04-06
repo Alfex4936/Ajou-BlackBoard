@@ -16,7 +16,7 @@ Linux:
 
 day옵션은 몇 일이내 공지까지 불러올 것인지 정한다. (ex. 0은 오늘 공지만)
 
-`AjouBlackBoard`를 실행한다.
+`AjouBlackBoard`를 실행한다. (*윈도우: 컴퓨터 시작에 자동 실행은 `startup.bat`을 추가 실행하세요*)
 
 ![yaml](https://user-images.githubusercontent.com/2356749/113546947-f7c97c80-9627-11eb-9d5f-aba93dda4848.gif)
 
