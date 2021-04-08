@@ -99,7 +99,7 @@ class BlackBoard:
         now = datetime.now()
         diffDate = now - timedelta(self.day)
 
-        posts = 0
+        totalPosts = 0
         os.system("cls")
         dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
         dayMessage = f"오늘부터 ~ {diffDate.month}월 {diffDate.day}일"
@@ -136,6 +136,7 @@ class BlackBoard:
 
                 parsedDate = datetime.strptime(postDate, "%Y년%m월%d일")
                 if (now - parsedDate).days <= self.day:
+                    totalPosts += 1
                     posts += 1
                     print()
                     print(f">>>>>----- {posts}번째 공지")
@@ -150,7 +151,7 @@ class BlackBoard:
 
         # div.name > ng-switch > a
 
-        if posts == 0:
+        if totalPosts == 0:
             os.system("cls")
             print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
 
