@@ -154,6 +154,8 @@ class BlackBoard:
         if totalPosts == 0:
             os.system("cls")
             print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
+        else:
+            print(f"총 {totalPosts}개의 공지가 있습니다.")
 
         os.system("pause")
         self.getFinals()
@@ -164,7 +166,7 @@ class BlackBoard:
     def getFinals(self):
         os.system("cls")
 
-        print("\n\t해야할 목록을 불러오는 중...")
+        print("\n\n\t해야할 목록을 불러오는 중...")
         self.driver.get("https://eclass2.ajou.ac.kr/ultra/stream")
         try:
             WebDriverWait(self.driver, 20).until(
@@ -175,7 +177,7 @@ class BlackBoard:
 
         html = self.driver.page_source
         soup = HTMLParser(html, "html.parser")
-        DueContents = soup.css(
+        dueContents = soup.css(
             "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.name > ng-switch > a"
         )
         dueDates = soup.css(
@@ -186,15 +188,18 @@ class BlackBoard:
         )
 
         print("\n\t--- 제공 예정 ---")
-        n = len(DueContents)
+        n = len(dueContents)
         for i in range(n):
             print(classNames[i].text(strip=False))
-            print("\t" + DueContents[i].text(strip=False))
+            print("\t" + dueContents[i].text(strip=False))
             print("\t지정 마감일:" + dueDates[i].text(strip=False))
             print()
+        if n == 0:
+            print("\n모든 할 일을 끝냈습니다.")
+        
 
     def exit(self):
-        print("\n\t종료 중...")
+        # print("\n종료 중...")
         self.driver.close()
         self.driver.quit()
         return True
