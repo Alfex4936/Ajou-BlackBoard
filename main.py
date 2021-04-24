@@ -26,39 +26,35 @@ def resource_path(another_way):
 
 
 class BlackBoard:
-    options = Options()
-    options.add_argument("--log-level=3")
-    options.add_argument("--headless")
-    options.add_argument(
-        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
-    )
-
     with open("./univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
-    def __init__(self):
-        self.driver = webdriver.Chrome(
-            resource_path("./chrome89.exe"), options=self.options
-        )
+    def __init__(self, options):
+        self.driver = webdriver.Chrome(resource_path("./chrome89.exe"), options=options)
         self.driver.implicitly_wait(5)
         self.day = 0 if self.conf["user"]["day"] < 0 else self.conf["user"]["day"]
 
-    def getNotices(self):
-        self.driver.implicitly_wait(5)
-
-        self.driver.get(self.conf["link"]["bb"])
-        try:
-            WebDriverWait(self.driver, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".btn-login"))
-            )
-        finally:
-            pass
-
-        self.driver.find_element_by_name("userId").send_keys(self.conf["user"]["id"])
+    def clickLogin(self):
         # driver.find_element_by_name("userId").send_keys(Config.bb_id)
+        self.driver.find_element_by_name("userId").send_keys(self.conf["user"]["id"])
         self.driver.find_element_by_name("password").send_keys(self.conf["user"]["pw"])
         self.driver.find_element_by_xpath('//*[@id="loginSubmit"]').click()
 
+    def getNotices(self):
+        # 아주대 메인으로 이동하면 자동으로 로그인 홈페이지로 감
+        self.driver.get(self.conf["link"]["bb"])
+        try:
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".btn-login"))
+            )
+        except Exception:
+            self.exit()
+            sys.exit(1)
+
+        # 로그인하기
+        self.clickLogin()
+
+        # 수강 중인 클래스를 쉽게 모으기 위해 이동
         self.driver.get(
             "https://eclass2.ajou.ac.kr/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_2_1&forwardUrl=detach_module%2F_22_1%2F"
         )
@@ -67,11 +63,8 @@ class BlackBoard:
                 EC.presence_of_element_located((By.ID, "_22_1termCourses_noterm"))
             )
         except Exception:
+            self.exit()
             sys.exit(1)
-        finally:
-            pass
-        # _22_1termCourses_noterm > ul > li:nth-child(2) > a
-        # _22_1termCourses_noterm > ul > li:nth-child(1) > a
 
         if not self.conf["user"]["cls"]:
             html = self.driver.page_source
@@ -125,8 +118,9 @@ class BlackBoard:
                     "#announcementList > li > div.details > div.vtbegenerated"
                 )
                 dates = soup.css("#announcementList > li > div.details > p > span")
-            finally:
-                pass
+            except Exception:
+                self.exit()
+                sys.exit(1)
 
             for title, content, date in zip(titles, contents, dates):
                 date = date.text(strip=False)
@@ -172,8 +166,9 @@ class BlackBoard:
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, ".js-title-link"))
             )
-        finally:
-            pass
+        except Exception:
+            self.exit()
+            sys.exit(1)
 
         html = self.driver.page_source
         soup = HTMLParser(html, "html.parser")
@@ -196,7 +191,6 @@ class BlackBoard:
             print()
         if n == 0:
             print("\n모든 할 일을 끝냈습니다.")
-        
 
     def exit(self):
         # print("\n종료 중...")
@@ -219,8 +213,16 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    bb = BlackBoard()
+    options = Options()
+    options.add_argument("--log-level=3")
+    options.add_argument("--headless")
+    options.add_argument(
+        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+    )
 
+    bb = BlackBoard(options)
+
+    # windows에서 콘솔 앱 종료 버튼 누를 때
     win32api.SetConsoleCtrlHandler(bb.exit, True)
 
     bb.getNotices()
