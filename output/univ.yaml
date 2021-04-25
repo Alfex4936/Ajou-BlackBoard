@@ -3,6 +3,6 @@ link:
   web: https://eclass2.ajou.ac.kr/webapps/blackboard/execute/announcement?method=search&context=course_entry&handle=announcements_entry&mode=view&course_id=
 user:
   cls:
+  day: 1
   id: 아이디
   pw: 비밀번호
-  day: 1

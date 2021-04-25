@@ -4,10 +4,10 @@
 
 *개인 설정은 어디로 전송되지 않습니다. (로컬에서만 작동)*
 
-Windows:
-[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.2/AjouBB_v1.0.2.zip)
+Windows (v1.0.3):
+[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.3/AjouBB_v1.0.3.zip)
 
-Linux:
+Linux (v1.0.1):
 [AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.1/AjouBlackBoard_v1.0.1_linux64.tar.xz)
 
 위에 파일을 다운로드 한 후 `univ.yaml`을 notepad나 텍스트 편집기로 열어서
@@ -24,7 +24,7 @@ day옵션은 몇 일이내 공지까지 불러올 것인지 정한다. (ex. 0은
 
 자동으로 수강 중인 코스의 공지를 day 옵션에 맞게 불러온다.
 
-* day 값이 3이여서 4월 6일부터 4월 9일 공지를 전부 불러왔음 *
+* univ.yaml의 day 값이 3이여서 4월 6일부터 4월 9일 공지를 전부 불러왔음
 ![ajou](https://user-images.githubusercontent.com/2356749/114188714-5f632d00-9984-11eb-8791-3aeb2ba052ba.gif)
 
 ## 기능 2 - 제공 예정

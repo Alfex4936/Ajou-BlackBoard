@@ -30,6 +30,7 @@ class BlackBoard:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
     def __init__(self, options):
+        print("[1/3] 아주대학교 사이트 접속 하는 중...")
         self.driver = webdriver.Chrome(resource_path("./chrome89.exe"), options=options)
         self.driver.implicitly_wait(5)
         self.day = 0 if self.conf["user"]["day"] < 0 else self.conf["user"]["day"]
@@ -53,6 +54,7 @@ class BlackBoard:
 
         # 로그인하기
         self.clickLogin()
+        print("[2/3] 로그인 완료...")
 
         # 수강 중인 클래스를 쉽게 모으기 위해 이동
         self.driver.get(
@@ -65,7 +67,7 @@ class BlackBoard:
         except Exception:
             self.exit()
             sys.exit(1)
-
+        print("[3/3] 수강 중인 강의 정리 중...")
         if not self.conf["user"]["cls"]:
             html = self.driver.page_source
             soup = HTMLParser(html, "html.parser")
@@ -98,7 +100,7 @@ class BlackBoard:
         dayMessage = f"오늘부터 ~ {diffDate.month}월 {diffDate.day}일"
         print(f"\n\n\t>>> {dayMessage}까지 공지 불러오는 중...")
 
-        for ajouCls in self.conf["user"]["cls"]:
+        for i, ajouCls in enumerate(self.conf["user"]["cls"]):
             posts = 0
 
             classId, className = ajouCls.values()
@@ -137,11 +139,16 @@ class BlackBoard:
                     print(f"\n{className}: {title.text(strip=True)}")
                     print()
                     print(f"링크: {classId}")
-                    print(content.text(strip=False))
+                    print(
+                        content.text(strip=False)
+                        # .encode("utf-8", "ignore")
+                        # .decode("utf-8")  emoji는 가능하나, conhost에서 자체적으로 chcp 65001을 해야함
+                    )
                     print(f"{date}\n")
                     print("-" * 50)
                 else:
                     break
+            self.conf["user"]["cls"][i]["posts"] = posts  # 각 강의마다 공지 몇 개인지 체크
 
         # div.name > ng-switch > a
 
@@ -149,18 +156,23 @@ class BlackBoard:
             os.system("cls")
             print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
         else:
-            print(f"총 {totalPosts}개의 공지가 있습니다.")
+            print(f"총 {totalPosts}개의 공지")
+            for lesson in self.conf["user"]["cls"]:
+                _, className, post = lesson.values()
+                if post > 0:
+                    print(f" └ {className}: {post}개의 공지")
+            print()
 
         os.system("pause")
         self.getFinals()
         self.exit()
-        print("\n>>>")
+        print()
         os.system("pause")
 
     def getFinals(self):
         os.system("cls")
 
-        print("\n\n\t해야할 목록을 불러오는 중...")
+        print("\n\n해야할 목록을 불러오는 중...")
         self.driver.get("https://eclass2.ajou.ac.kr/ultra/stream")
         try:
             WebDriverWait(self.driver, 20).until(
@@ -181,6 +193,7 @@ class BlackBoard:
         classNames = soup.css(
             "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.context.ellipsis > a"
         )
+        os.system("cls")
 
         print("\n\t--- 제공 예정 ---")
         n = len(dueContents)
@@ -190,7 +203,7 @@ class BlackBoard:
             print("\t지정 마감일:" + dueDates[i].text(strip=False))
             print()
         if n == 0:
-            print("\n모든 할 일을 끝냈습니다.")
+            print("\n\t모든 할 일을 끝냈습니다.")
 
     def exit(self):
         # print("\n종료 중...")
@@ -213,7 +226,14 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
+    __version__ = "1.0.3"
+
+    os.system(f"title 아주대학교 블랙보드 v{__version__}")
+
     options = Options()
+    options.add_experimental_option(
+        "excludeSwitches", ["enable-logging"]
+    )  # Dev listening on...
     options.add_argument("--log-level=3")
     options.add_argument("--headless")
     options.add_argument(
