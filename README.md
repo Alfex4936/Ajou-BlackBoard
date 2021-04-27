@@ -24,8 +24,8 @@ day옵션은 몇 일이내 공지까지 불러올 것인지 정한다. (ex. 0은
 
 자동으로 수강 중인 코스의 공지를 day 옵션에 맞게 불러온다.
 
-* univ.yaml의 day 값이 3이여서 4월 6일부터 4월 9일 공지를 전부 불러왔음
-![ajou](https://user-images.githubusercontent.com/2356749/114188714-5f632d00-9984-11eb-8791-3aeb2ba052ba.gif)
+* `univ.yaml`의 day 값이 1이여서 4월 26일부터 4월 27일 공지를 불러왔음
+![ajou](https://user-images.githubusercontent.com/2356749/116214126-5eead480-a781-11eb-9fc2-126fd3867ba8.gif)
 
 ## 기능 2 - 제공 예정
 
