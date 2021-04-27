@@ -7,8 +7,8 @@
 Windows (v1.0.3):
 [AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.3/AjouBB_v1.0.3.zip)
 
-Linux (v1.0.1):
-[AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.1/AjouBlackBoard_v1.0.1_linux64.tar.xz)
+Linux (v1.0.3):
+[AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.3/AjouBlackBoard_v1.0.3_linux64.tar.xz)
 
 위에 파일을 다운로드 한 후 `univ.yaml`을 notepad나 텍스트 편집기로 열어서
 
