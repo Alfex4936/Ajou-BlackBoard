@@ -1,8 +1,8 @@
+import os
 import re
+import sys
 from datetime import datetime, timedelta
 
-import os
-import sys
 import win32api
 import yaml
 from selectolax.parser import HTMLParser
@@ -16,7 +16,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 def resource_path(another_way):
     try:
         usual_way = (
-            sys._MEIPASS
+            sys._MEIPASS  # type: ignore
         )  # When in .exe, this code is executed, that enters temporary directory that is created automatically during runtime.
     except Exception:
         usual_way = os.path.dirname(
@@ -28,6 +28,9 @@ def resource_path(another_way):
 class BlackBoard:
     with open("./univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
+
+    CLEAR = lambda: os.system("cls")
+    PAUSE = lambda: os.system("pause")
 
     def __init__(self, options):
         print("[1/3] 아주대학교 사이트 접속 하는 중...")
@@ -56,19 +59,19 @@ class BlackBoard:
         self.clickLogin()
         print("[2/3] 로그인 완료...")
 
-        # 수강 중인 클래스를 쉽게 모으기 위해 이동
-        self.driver.get(
-            "https://eclass2.ajou.ac.kr/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_2_1&forwardUrl=detach_module%2F_22_1%2F"
-        )
-        try:
-            WebDriverWait(self.driver, 20).until(
-                EC.presence_of_element_located((By.ID, "_22_1termCourses_noterm"))
-            )
-        except Exception:
-            self.exit()
-            sys.exit(1)
         print("[3/3] 수강 중인 강의 정리 중...")
-        if not self.conf["user"]["cls"]:
+        if not self.conf["user"]["cls"]:  # TODO 다르면 초기화 (yml에 last 업뎃 시간 만들고 1달마다 체크?)
+            # 수강 중인 클래스를 쉽게 모으기 위해 이동
+            self.driver.get(
+                "https://eclass2.ajou.ac.kr/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_2_1&forwardUrl=detach_module%2F_22_1%2F"
+            )
+            try:
+                WebDriverWait(self.driver, 20).until(
+                    EC.presence_of_element_located((By.ID, "_22_1termCourses_noterm"))
+                )
+            except Exception:
+                self.exit()
+                sys.exit(1)
             html = self.driver.page_source
             soup = HTMLParser(html, "html.parser")
             classLinks = soup.css("a")
@@ -95,7 +98,7 @@ class BlackBoard:
         diffDate = now - timedelta(self.day)
 
         totalPosts = 0
-        os.system("cls")
+        self.CLEAR()
         dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
         dayMessage = f"오늘부터 ~ {diffDate.month}월 {diffDate.day}일"
         print(f"\n\n\t>>> {dayMessage}까지 공지 불러오는 중...")
@@ -153,7 +156,7 @@ class BlackBoard:
         # div.name > ng-switch > a
 
         if totalPosts == 0:
-            os.system("cls")
+            self.CLEAR()
             print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
         else:
             print(f"총 {totalPosts}개의 공지")
@@ -163,14 +166,14 @@ class BlackBoard:
                     print(f" └ {className}: {post}개의 공지")
             print()
 
-        os.system("pause")
+        self.PAUSE()
         self.getFinals()
         self.exit()
         print()
-        os.system("pause")
+        self.PAUSE()
 
     def getFinals(self):
-        os.system("cls")
+        self.CLEAR()
 
         print("\n\n해야할 목록을 불러오는 중...")
         self.driver.get("https://eclass2.ajou.ac.kr/ultra/stream")
@@ -193,7 +196,7 @@ class BlackBoard:
         classNames = soup.css(
             "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.context.ellipsis > a"
         )
-        os.system("cls")
+        self.CLEAR()
 
         print("\n\t--- 제공 예정 ---")
         n = len(dueContents)
