@@ -7,6 +7,7 @@ import win32api
 import yaml
 from selectolax.parser import HTMLParser
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -29,8 +30,8 @@ class BlackBoard:
     with open("./univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
-    CLEAR = lambda: os.system("cls")
-    PAUSE = lambda: os.system("pause")
+    CLEAR = lambda self: os.system("cls")
+    PAUSE = lambda self: os.system("pause")
 
     def __init__(self, options):
         print("[1/3] 아주대학교 사이트 접속 하는 중...")
@@ -46,7 +47,14 @@ class BlackBoard:
 
     def getNotices(self):
         # 아주대 메인으로 이동하면 자동으로 로그인 홈페이지로 감
-        self.driver.get(self.conf["link"]["bb"])
+        try:
+            self.driver.get(self.conf["link"]["bb"])
+        except WebDriverException:
+            print("[ERR] 서버 오류, 나중에 다시 시도하세요.")
+            self.PAUSE()
+            self.exit()
+            sys.exit(1)
+
         try:
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, ".btn-login"))
