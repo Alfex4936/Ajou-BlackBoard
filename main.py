@@ -12,6 +12,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def resource_path(another_way):
@@ -30,12 +31,19 @@ class BlackBoard:
     with open("./univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
-    CLEAR = lambda self: os.system("cls")
-    PAUSE = lambda self: os.system("pause")
+    CLEAR = lambda _: os.system("cls")
+    PAUSE = lambda _: os.system("pause")
 
     def __init__(self, options):
         print("[1/3] 아주대학교 사이트 접속 하는 중...")
-        self.driver = webdriver.Chrome(resource_path("./chrome89.exe"), options=options)
+        self.driver = webdriver.Chrome(
+            resource_path(
+                ChromeDriverManager(
+                    log_level=0, cache_valid_range=1, print_first_line=False
+                ).install()
+            ),
+            options=options,
+        )
         self.driver.implicitly_wait(5)
         self.day = 0 if self.conf["user"]["day"] < 0 else self.conf["user"]["day"]
 
@@ -237,7 +245,7 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
 
     os.system(f"title 아주대학교 블랙보드 v{__version__}")
 
