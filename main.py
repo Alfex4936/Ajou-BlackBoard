@@ -182,16 +182,16 @@ class BlackBoard:
                     print(f" └ {className}: {post}개의 공지")
             print()
 
-        self.PAUSE()
+        # self.PAUSE()
         self.getFinals()
-        self.exit()
-        print()
         self.PAUSE()
+        self.exit()
 
     def getFinals(self):
-        self.CLEAR()
+        # self.CLEAR()
 
-        print("\n\n해야할 목록을 불러오는 중...")
+        # print("\n\n해야할 목록을 불러오는 중...")
+        print("\n>>>>>-----< 제공 예정 >-----<<<<<\n")
         self.driver.get("https://eclass2.ajou.ac.kr/ultra/stream")
         try:
             WebDriverWait(self.driver, 20).until(
@@ -212,9 +212,8 @@ class BlackBoard:
         classNames = soup.css(
             "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.context.ellipsis > a"
         )
-        self.CLEAR()
+        # self.CLEAR()
 
-        print("\n\t--- 제공 예정 ---")
         n = len(dueContents)
         for i in range(n):
             print(classNames[i].text(strip=False))
