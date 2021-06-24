@@ -76,7 +76,15 @@ class BlackBoard:
         print("[2/3] 로그인 완료...")
 
         print("[3/3] 수강 중인 강의 정리 중...")
-        if not self.conf["user"]["cls"]:  # TODO 다르면 초기화 (yml에 last 업뎃 시간 만들고 1달마다 체크?)
+
+        # 한달마다 강의 체크
+        now = datetime.now()
+        assert self.conf["user"]["date"] != ""
+        last_parsed = datetime.strptime(self.conf["user"]["date"], "%Y-%m-%d")
+
+        if (
+            not self.conf["user"]["cls"] or abs(last_parsed.month - now.month) > 0
+        ):  # 비어있거나 매달 체크
             # 수강 중인 클래스를 쉽게 모으기 위해 이동
             self.driver.get(
                 "https://eclass2.ajou.ac.kr/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_2_1&forwardUrl=detach_module%2F_22_1%2F"
@@ -104,13 +112,15 @@ class BlackBoard:
                     }
                 )
 
+            self.conf["user"]["date"] = now.strftime("%Y-%m-%d")  # ex) 2021-12-31
             self.conf["user"]["cls"] = classIds
             with open("univ.yaml", "w") as f:
                 yaml.dump(self.conf, f)
 
+        del last_parsed
+
         # print(conf["user"]["cls"])
 
-        now = datetime.now()
         diffDate = now - timedelta(self.day)
 
         totalPosts = 0
