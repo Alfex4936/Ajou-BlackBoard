@@ -1,0 +1,47 @@
+<Content>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "80dp"
+
+    MDTextField:
+        id: md_search
+        font_name:"NanumBarunGothic.ttf"
+        hint_text: "KEYWORD"
+
+<Mine>:
+    orientation:'vertical'
+    
+
+    MDToolbar:
+        title: '[font=NanumBarunGothic.ttf]아주대학교[/font]'
+        right_action_items: [["text-search", lambda x: app.show_search_dialog()], ["refresh", lambda x: app.refresh()]]
+
+    MDBottomNavigation:
+
+        MDBottomNavigationItem:
+            name: 'screen 1'
+            text: 'Notice'
+            icon: 'comment-text-outline'
+
+            ScrollView:
+                MDList:
+                    id: container
+
+        MDBottomNavigationItem:
+            name: 'screen 2'
+            text: 'BB'
+            icon: 'school-outline'
+
+            MDLabel:
+                text: 'Ajou Blackboard'
+                halign: 'center'
+
+        MDBottomNavigationItem:
+            name: 'screen 3'
+            text: 'ETC'
+            icon: 'account-settings-outline'
+
+            ScrollView:
+                MDList:
+                    id: etc_list

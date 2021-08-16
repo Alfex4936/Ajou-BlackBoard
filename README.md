@@ -32,3 +32,30 @@ day옵션은 몇 일이내 공지까지 불러올 것인지 정한다. (ex. 0은
 코스 공지를 보여준 후 아무 키나 누르면 `제공 예정` 부분을 불러온다.
 
 ![due](https://user-images.githubusercontent.com/2356749/113511215-b5f1f500-9599-11eb-9516-18bfb8ffcf8a.gif)
+
+# GUI 버전 (on progress)
+
+[gui 폴더](https://github.com/Alfex4936/Ajou-BlackBoard/tree/main/gui)
+
+Kivy + KivyMD을 이용한 멀티 플랫폼 앱 개발
+
+## 공지 (검색, 새로고침)
+
+RefreshLayout으로 바꿔서 pull to refresh 방식이 나을듯
+
+![main](https://user-images.githubusercontent.com/2356749/129508421-f65116c7-fb29-48da-a63d-d37ac21af770.png)
+
+![search](https://user-images.githubusercontent.com/2356749/129508425-66e86004-9e52-4fb6-b91a-897694fe2633.png)
+
+## 블랙보드 공지 (NOT YET)
+
+수강 중인 수업들 공지 제목만 따고 클릭하면 Dialog로 전체 내용 보여주기
+## additional (NOT YET)
+
+1. 학사일정
+
+2. 중앙 도서관 좌석 현황
+
+![library](https://user-images.githubusercontent.com/2356749/129508427-3aa54863-b43e-4f47-8e1e-d231ef8796b1.png)
+
+3. 학식
