@@ -1,3 +1,4 @@
+import locale
 import os
 import re
 import sys
@@ -159,7 +160,15 @@ class BlackBoard:
                 if not postDate:
                     continue
 
-                parsedDate = datetime.strptime(postDate, "%Y년%m월%d일")
+                try:
+                    parsedDate = datetime.strptime(postDate, "%Y년%m월%d일")
+                except ValueError:  # 영문 강의 ex) September14,2021
+                    postDate = "".join(date.split()[3:6])
+                    # postDate = postDate.replace(",", "")
+                    locale.setlocale(locale.LC_ALL, "en")
+                    parsedDate = datetime.strptime(postDate, "%B%d,%Y")
+                    locale.setlocale(locale.LC_ALL, "Korean_Korea")
+
                 if (now - parsedDate).days <= self.day:
                     totalPosts += 1
                     posts += 1
@@ -254,7 +263,7 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    __version__ = "1.0.4"
+    __version__ = "1.0.6"
 
     os.system(f"title 아주대학교 블랙보드 v{__version__}")
 
