@@ -2,10 +2,12 @@ import locale
 import os
 import re
 import sys
+import webbrowser
 from datetime import datetime, timedelta
 
 import win32api
 import yaml
+from pynotifier import Notification
 from selectolax.parser import HTMLParser
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -184,6 +186,16 @@ class BlackBoard:
                     )
                     print(f"{date}\n")
                     print("-" * 50)
+                    Notification(
+                        title=f"\n{className}: {title.text(strip=True)}",
+                        description=content.text(strip=False),
+                        icon_path="./ico/ms-icon-310x310.ico",  # On Windows .ico is required, on Linux - .png
+                        duration=None,  # forever
+                        callback_on_click=lambda: webbrowser.open(
+                            "https://eclass2.ajou.ac.kr/ultra/course"
+                        )
+                        # urgency="normal",
+                    ).send()
                 else:
                     break
             self.conf["user"]["cls"][i]["posts"] = posts  # 각 강의마다 공지 몇 개인지 체크
