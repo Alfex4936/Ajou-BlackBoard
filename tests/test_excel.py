@@ -7,6 +7,24 @@ import yaml
 from selectolax.parser import HTMLParser
 
 
+def read_html(filename: str):
+    with open(filename, "r", encoding="utf-8") as f:
+        soup = HTMLParser(f.read(), "html.parser")
+        titles = soup.css("tr > td:nth-child(3)")  # 컨텐츠명
+        if len(titles):
+            return
+        studied_times = soup.css("tr > td:nth-child(4)")  # 학습한 시간
+        approved_times = soup.css("tr > td:nth-child(5)")  # 학습 인정 시간
+        pf_status = soup.css("tr > td:nth-child(8)")  # P/F
+
+        for i in range(len(titles)):
+            print(titles[i].text())
+            print(studied_times[i].text())
+            print(approved_times[i].text())
+            print(pf_status[i].text())
+            print()
+
+
 def test_download():
     with open("univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
@@ -22,19 +40,7 @@ def test_download():
                 f"{temp}/test.html",
             )
 
-            with open(f"{temp}/test.html", "r", encoding="utf-8") as f:
-                soup = HTMLParser(f.read(), "html.parser")
-                titles = soup.css("tr > td:nth-child(3)")  # 컨텐츠명
-                studied_times = soup.css("tr > td:nth-child(4)")  # 학습한 시간
-                approved_times = soup.css("tr > td:nth-child(5)")  # 학습 인정 시간
-                pf_status = soup.css("tr > td:nth-child(8)")  # P/F
-
-                for i in range(len(titles)):
-                    print(titles[i].text())
-                    print(studied_times[i].text())
-                    print(approved_times[i].text())
-                    print(pf_status[i].text())
-                    print()
+            read_html(f"{temp}/test.html")
 
 
 if __name__ == "__main__":

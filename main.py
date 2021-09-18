@@ -4,8 +4,10 @@ import re
 import sys
 import tempfile
 import time
+import urllib.request
 import webbrowser
 from datetime import datetime, timedelta
+from urllib.parse import quote
 
 import win32api
 import yaml
@@ -53,7 +55,7 @@ class BlackBoard:
         self.driver.implicitly_wait(5)
         self.day = 0 if self.conf["user"]["day"] < 0 else self.conf["user"]["day"]
 
-    def clickLogin(self):
+    def click_login(self):
         # driver.find_element_by_name("userId").send_keys(Config.bb_id)
         self.driver.find_element_by_name("userId").send_keys(self.conf["user"]["id"])
         self.driver.find_element_by_name("password").send_keys(self.conf["user"]["pw"])
@@ -78,7 +80,7 @@ class BlackBoard:
             sys.exit(1)
 
         # 로그인하기
-        self.clickLogin()
+        self.click_login()
         print("[2/3] 로그인 완료...")
 
         WebDriverWait(self.driver, 20).until(
@@ -128,7 +130,7 @@ class BlackBoard:
                     {
                         "uid": uid.text(strip=True),
                         "id": cid.get_attribute("id")[19:],
-                        "name": link.text().split()[-1],
+                        "name": " ".join(link.text(strip=True).split()[1:]),
                         "link": self.conf["link"]["web"] + cid.get_attribute("id")[19:],
                     }
                 )
@@ -137,6 +139,7 @@ class BlackBoard:
             self.conf["user"]["cls"] = classes
             with open("univ.yaml", "w") as f:
                 yaml.dump(self.conf, f)
+            time.sleep(1)
 
         del last_parsed
 
@@ -273,6 +276,47 @@ class BlackBoard:
         if n == 0:
             print("\n\t모든 할 일을 끝냈습니다.")
 
+    def get_attendance(self):
+        print("\n>>>>>-----< 동영상 출석 현황 >-----<<<<<\n")
+
+        student_id = self.conf["user"]["student_id"]
+
+        for my_class in self.conf["user"]["cls"]:
+            uid = my_class["uid"]
+            name = my_class["name"]
+
+            with tempfile.TemporaryDirectory() as temp:
+                urllib.request.urlretrieve(
+                    f"https://eclass2.ajou.ac.kr/webapps/bbgs-OnlineAttendance-BB5ff5398b9f3ea/excel?selectedUserId={student_id}&crs_batch_uid={uid}&title={student_id}&column={quote('사용자명,위치,컨텐츠명,학습한시간,학습인정시간,컨텐츠시간,온라인출석진도율,온라인출석상태(P/F)')}",
+                    f"{temp}/temp.html",
+                )
+
+                self.read_html(f"{temp}/temp.html")
+
+    def read_html(self, filename: str):
+        with open(filename, "r", encoding="utf-8") as f:
+            soup = HTMLParser(f.read(), "html.parser")
+            titles = soup.css("tr > td:nth-child(3)")  # 컨텐츠명
+            if not len(titles):
+                return
+            studied_times = soup.css("tr > td:nth-child(4)")  # 학습한 시간
+            approved_times = soup.css("tr > td:nth-child(5)")  # 학습 인정 시간
+            pf_statuses = soup.css("tr > td:nth-child(8)")  # P/F
+
+            for i in range(len(titles)):
+                pf_status = pf_statuses[i].text(strip=True)
+                if pf_status == "P":
+                    continue
+
+                studied_time = studied_times[i].text(strip=True)
+                if not studied_time:
+                    studied_time = "0초"
+
+                print(f"동영상: {titles[i].text(strip=True)}")
+                print(
+                    f"학습한 시간: {studied_time} | 학습인정 시간: {approved_times[i].text(strip=True)} | {pf_status}"
+                )
+
     def exit(self):
         # print("\n종료 중...")
         self.driver.close()
@@ -294,7 +338,7 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    __version__ = "1.0.6"
+    __version__ = "1.0.7"
 
     os.system(f"title 아주대학교 블랙보드 v{__version__}")
 
@@ -313,4 +357,4 @@ if __name__ == "__main__":
     # windows에서 콘솔 앱 종료 버튼 누를 때
     win32api.SetConsoleCtrlHandler(bb.exit, True)
 
-    bb.getNotices()
+    bb.get_notices()
