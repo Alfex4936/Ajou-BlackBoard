@@ -2,6 +2,7 @@ import locale
 import os
 import re
 import sys
+import time
 import webbrowser
 from datetime import datetime, timedelta
 
@@ -13,6 +14,7 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
@@ -78,6 +80,10 @@ class BlackBoard:
         self.clickLogin()
         print("[2/3] 로그인 완료...")
 
+        WebDriverWait(self.driver, 20).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
+        )
+
         print("[3/3] 수강 중인 강의 정리 중...")
 
         # 한달마다 강의 체크
@@ -89,34 +95,45 @@ class BlackBoard:
             not self.conf["user"]["cls"] or abs(last_parsed.month - now.month) > 0
         ):  # 비어있거나 매달 체크
             # 수강 중인 클래스를 쉽게 모으기 위해 이동
-            self.driver.get(
-                "https://eclass2.ajou.ac.kr/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_2_1&forwardUrl=detach_module%2F_22_1%2F"
+            # self.driver.get(
+            #     "https://eclass2.ajou.ac.kr/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_2_1&forwardUrl=detach_module%2F_22_1%2F"
+            # )
+
+            self.driver.find_element_by_xpath(
+                '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[5]/div/div[1]/button[1]'
+            ).send_keys(Keys.ENTER)
+
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
             )
-            try:
-                WebDriverWait(self.driver, 20).until(
-                    EC.presence_of_element_located((By.ID, "_22_1termCourses_noterm"))
-                )
-            except Exception:
-                self.exit()
-                sys.exit(1)
+
+            time.sleep(1.5)
+
             html = self.driver.page_source
             soup = HTMLParser(html, "html.parser")
-            classLinks = soup.css("a")
+            courseTitles = soup.css("a > h4.js-course-title-element")
+            courseUIDs = soup.css(
+                "div.element-details.summary > div.multi-column-course-id"
+            )
 
-            classIds = []
+            courseIds = self.driver.find_elements_by_xpath(
+                '//*[contains(@id,"course-list-course-")]'
+            )
 
-            pattern = re.compile(r"id=([^&]+)")
-            for link in classLinks:
-                classIds.append(
+            classes = []
+
+            for link, uid, cid in zip(courseTitles, courseUIDs, courseIds):
+                classes.append(
                     {
-                        "link": self.conf["link"]["web"]
-                        + pattern.search(link.attributes["href"]).group(1),
+                        "uid": uid.text(strip=True),
+                        "id": cid.get_attribute("id")[19:],
                         "name": link.text().split()[-1],
+                        "link": self.conf["link"]["web"] + cid.get_attribute("id")[19:],
                     }
                 )
 
             self.conf["user"]["date"] = now.strftime("%Y-%m-%d")  # ex) 2021-12-31
-            self.conf["user"]["cls"] = classIds
+            self.conf["user"]["cls"] = classes
             with open("univ.yaml", "w") as f:
                 yaml.dump(self.conf, f)
 
@@ -135,8 +152,8 @@ class BlackBoard:
         for i, ajouCls in enumerate(self.conf["user"]["cls"]):
             posts = 0
 
-            classId, className = ajouCls.values()
-            self.driver.get(classId)
+            _, noticeLink, className, _ = ajouCls.values()
+            self.driver.get(noticeLink)
 
             try:
                 WebDriverWait(self.driver, 20).until(
@@ -178,7 +195,7 @@ class BlackBoard:
                     print(f">>>>>----- {posts}번째 공지")
                     print(f"\n{className}: {title.text(strip=True)}")
                     print()
-                    print(f"링크: {classId}")
+                    print(f"링크: {noticeLink}")
                     print(
                         content.text(strip=False)
                         # .encode("utf-8", "ignore")
@@ -208,7 +225,7 @@ class BlackBoard:
         else:
             print(f"총 {totalPosts}개의 공지")
             for lesson in self.conf["user"]["cls"]:
-                _, className, post = lesson.values()
+                _, noticeLink, className, _, post = lesson.values()
                 if post > 0:
                     print(f" └ {className}: {post}개의 공지")
             print()
