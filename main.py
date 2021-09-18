@@ -2,6 +2,7 @@ import locale
 import os
 import re
 import sys
+import tempfile
 import time
 import webbrowser
 from datetime import datetime, timedelta
@@ -58,7 +59,7 @@ class BlackBoard:
         self.driver.find_element_by_name("password").send_keys(self.conf["user"]["pw"])
         self.driver.find_element_by_xpath('//*[@id="loginSubmit"]').click()
 
-    def getNotices(self):
+    def get_notices(self):
         # 아주대 메인으로 이동하면 자동으로 로그인 홈페이지로 감
         try:
             self.driver.get(self.conf["link"]["bb"])
@@ -231,11 +232,12 @@ class BlackBoard:
             print()
 
         # self.PAUSE()
-        self.getFinals()
+        self.get_todos()
+        self.get_attendance()
         self.PAUSE()
         self.exit()
 
-    def getFinals(self):
+    def get_todos(self):
         # self.CLEAR()
 
         # print("\n\n해야할 목록을 불러오는 중...")
