@@ -33,6 +33,12 @@ day옵션은 몇 일이내 공지까지 불러올 것인지 정한다. (ex. 0은
 
 ![due](https://user-images.githubusercontent.com/2356749/113511215-b5f1f500-9599-11eb-9516-18bfb8ffcf8a.gif)
 
+## 기능 3 - 온라인 동영상 출석 현황
+
+봐야할 영상들을 불러온다. (`video.py` 참고)
+
+![video](https://user-images.githubusercontent.com/2356749/135459264-ea25ebc3-3395-49df-963e-5a739f5460b9.png)
+
 # GUI 버전 (on progress)
 
 [gui 폴더](https://github.com/Alfex4936/Ajou-BlackBoard/tree/main/gui)
