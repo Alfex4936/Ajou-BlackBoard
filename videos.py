@@ -4,6 +4,7 @@ import sys
 import time
 import urllib.request
 from datetime import datetime
+from operator import attrgetter
 from random import random
 from tempfile import TemporaryDirectory
 from typing import List
@@ -177,7 +178,8 @@ class BlackBoard:
         else:
             print("\n>>>>>-----< VIDEO ATTENDANCE STATUS >-----<<<<<\n")
 
-        videos = sorted(self.get_attendance(), key=lambda x: x.due_date)
+        # videos = sorted(self.get_attendance(), key=lambda x: x.due_date)
+        videos = sorted(self.get_attendance(), key=attrgetter("due_date"))
 
         if self.LANG == "ko":
             print(f"# 봐야할 영상 {len(videos)}개\n")

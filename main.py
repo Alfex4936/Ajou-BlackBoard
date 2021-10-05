@@ -314,7 +314,7 @@ class BlackBoard:
 
                 print(f"동영상: {titles[i].text(strip=True)}")
                 print(
-                    f"학습한 시간: {studied_time} | 학습인정 시간: {approved_times[i].text(strip=True)} | {pf_status}"
+                    f"\t학습한 시간: {studied_time} | 학습인정 시간: {approved_times[i].text(strip=True)} | {pf_status}"
                 )
 
     def exit(self):
