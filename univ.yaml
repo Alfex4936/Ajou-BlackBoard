@@ -3,7 +3,9 @@ link:
   web: https://eclass2.ajou.ac.kr/webapps/blackboard/execute/announcement?method=search&context=course_entry&handle=announcements_entry&mode=view&course_id=
 user:
   cls:
-  day: 1
-  date: "2021-06-24"
-  id: 아이디
-  pw: 비밀번호
+  date: "2021-08-30"
+  day: 2
+  id: 아주_아이디
+  pw: 아주_비밀번호
+  student_id: 20211016
+  lang: ko
