@@ -189,8 +189,8 @@ class BlackBoard:
         for i, video in enumerate(videos, start=1):
             print(f"{i}. {video.name} ({video.watched_time}/{video.approve_time})")
 
-        self.PAUSE()
         self.exit()
+        self.PAUSE()
 
     def get_attendance(self):
         student_id = self.conf["user"]["student_id"]
@@ -220,7 +220,7 @@ class BlackBoard:
         with open(filename, "r", encoding="utf-8") as f:
             soup = HTMLParser(f.read(), "html.parser")
             titles = soup.css("tr > td:nth-child(3)")  # 컨텐츠명
-            if not len(titles):
+            if not titles:
                 return result
             studied_times = soup.css("tr > td:nth-child(4)")  # 학습한 시간
             approved_times = soup.css("tr > td:nth-child(5)")  # 학습 인정 시간
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     os.system(f"title Ajou BB v{__version__}")
 
