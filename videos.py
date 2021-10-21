@@ -143,7 +143,7 @@ class BlackBoard:
             time.sleep(1.5)
 
             html = self.driver.page_source
-            soup = HTMLParser(html, "html.parser")
+            soup = HTMLParser(html)
             courseTitles = soup.css("a > h4.js-course-title-element")
             courseUIDs = soup.css(
                 "div.element-details.summary > div.multi-column-course-id"
@@ -218,7 +218,7 @@ class BlackBoard:
         now = datetime.now()
 
         with open(filename, "r", encoding="utf-8") as f:
-            soup = HTMLParser(f.read(), "html.parser")
+            soup = HTMLParser(f.read())
             titles = soup.css("tr > td:nth-child(3)")  # 컨텐츠명
             if not titles:
                 return result
@@ -239,7 +239,7 @@ class BlackBoard:
                 # current_video_up, current_video_due = datetime.strptime(
                 #     dates[0], "%Y-%m-%d"
                 # ), datetime.strptime(dates[1], "%Y-%m-%d")
-                if current_video_due < now:
+                if (now - current_video_due).days > 0:
                     continue
 
                 studied_time = studied_times[i].text(strip=True)

@@ -2,11 +2,14 @@ import locale
 import os
 import re
 import sys
-import tempfile
 import time
 import urllib.request
 import webbrowser
 from datetime import datetime, timedelta
+from operator import attrgetter
+from random import random
+from tempfile import TemporaryDirectory
+from typing import List
 from urllib.parse import quote
 
 import win32api
@@ -21,6 +24,21 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+
+
+class Video:
+    def __init__(self, name, watched_time, approve_time, pf, current_video_up):
+        self.name = name
+        self.watched_time = watched_time
+        self.approve_time = approve_time
+        self.pf = pf
+        self.due_date = current_video_up
+
+    def __repr__(self):
+        return f"<Video name={self.name}, watched_time={self.watched_time}, self.approve_time={self.approve_time}>"
+
+    def __bool__(self):
+        return self.pf == "P"
 
 
 def resource_path(another_way):
@@ -41,6 +59,7 @@ class BlackBoard:
 
     CLEAR = lambda _: os.system("cls")
     PAUSE = lambda _: os.system("pause")
+    LANG = conf["user"]["lang"]
 
     def __init__(self, options):
         print("[1/3] 아주대학교 사이트 접속 하는 중...")
@@ -67,9 +86,9 @@ class BlackBoard:
             self.driver.get(self.conf["link"]["bb"])
         except WebDriverException:
             print("[ERR] 서버 오류, 나중에 다시 시도하세요.")
-            self.PAUSE()
             self.exit()
-            sys.exit(1)
+            self.PAUSE()
+            sys.exit(0)
 
         try:
             WebDriverWait(self.driver, 20).until(
@@ -77,7 +96,7 @@ class BlackBoard:
             )
         except Exception:
             self.exit()
-            sys.exit(1)
+            sys.exit(0)
 
         # 로그인하기
         self.click_login()
@@ -113,7 +132,7 @@ class BlackBoard:
             time.sleep(1.5)
 
             html = self.driver.page_source
-            soup = HTMLParser(html, "html.parser")
+            soup = HTMLParser(html)
             courseTitles = soup.css("a > h4.js-course-title-element")
             courseUIDs = soup.css(
                 "div.element-details.summary > div.multi-column-course-id"
@@ -167,7 +186,7 @@ class BlackBoard:
                 )
                 html = self.driver.page_source
 
-                soup = HTMLParser(html, "html.parser")
+                soup = HTMLParser(html)
                 titles = soup.css("#announcementList > li > h3")
                 contents = soup.css(
                     "#announcementList > li > div.details > div.vtbegenerated"
@@ -175,7 +194,7 @@ class BlackBoard:
                 dates = soup.css("#announcementList > li > div.details > p > span")
             except Exception:
                 self.exit()
-                sys.exit(1)
+                sys.exit(0)
 
             for title, content, date in zip(titles, contents, dates):
                 date = date.text(strip=False)
@@ -207,16 +226,16 @@ class BlackBoard:
                     )
                     print(f"{date}\n")
                     print("-" * 50)
-                    Notification(
-                        title=f"\n{className}: {title.text(strip=True)}",
-                        description=content.text(strip=False),
-                        icon_path="./ico/ms-icon-310x310.ico",  # On Windows .ico is required, on Linux - .png
-                        duration=None,  # forever
-                        callback_on_click=lambda: webbrowser.open(
-                            "https://eclass2.ajou.ac.kr/ultra/course"
-                        )
-                        # urgency="normal",
-                    ).send()
+                    # Notification(
+                    #     title=f"\n{className}: {title.text(strip=True)}",
+                    #     description=content.text(strip=False),
+                    #     icon_path="./ico/ms-icon-310x310.ico",  # On Windows .ico is required, on Linux - .png
+                    #     duration=None,  # forever
+                    #     callback_on_click=lambda: webbrowser.open(
+                    #         "https://eclass2.ajou.ac.kr/ultra/course"
+                    #     )
+                    #     # urgency="normal",
+                    # ).send()
                 else:
                     break
             self.conf["user"]["cls"][i]["posts"] = posts  # 각 강의마다 공지 몇 개인지 체크
@@ -237,8 +256,9 @@ class BlackBoard:
         # self.PAUSE()
         self.get_todos()
         self.get_attendance()
-        self.PAUSE()
         self.exit()
+        self.PAUSE()
+        sys.exit(0)
 
     def get_todos(self):
         # self.CLEAR()
@@ -252,10 +272,10 @@ class BlackBoard:
             )
         except Exception:
             self.exit()
-            sys.exit(1)
+            sys.exit(0)
 
         html = self.driver.page_source
-        soup = HTMLParser(html, "html.parser")
+        soup = HTMLParser(html)
         dueContents = soup.css(
             "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.name > ng-switch > a"
         )
@@ -279,43 +299,94 @@ class BlackBoard:
     def get_attendance(self):
         print("\n>>>>>-----< 동영상 출석 현황 >-----<<<<<\n")
 
+        videos = sorted(self.__get_attendance(), key=attrgetter("due_date"))
+
+        if self.LANG == "ko":
+            print(f"# 봐야할 영상 {len(videos)}개\n")
+        else:
+            print(f"# {len(videos)} videos to watch \n")
+
+        for i, video in enumerate(videos, start=1):
+            print(f"{i}. {video.name} ({video.watched_time}/{video.approve_time})")
+
+    def __get_attendance(self):
         student_id = self.conf["user"]["student_id"]
+
+        result = []
 
         for my_class in self.conf["user"]["cls"]:
             uid = my_class["uid"]
-            name = my_class["name"]
+            # name = my_class["name"]
 
-            with tempfile.TemporaryDirectory() as temp:
+            with TemporaryDirectory() as temp:
                 urllib.request.urlretrieve(
                     f"https://eclass2.ajou.ac.kr/webapps/bbgs-OnlineAttendance-BB5ff5398b9f3ea/excel?selectedUserId={student_id}&crs_batch_uid={uid}&title={student_id}&column={quote('사용자명,위치,컨텐츠명,학습한시간,학습인정시간,컨텐츠시간,온라인출석진도율,온라인출석상태(P/F)')}",
                     f"{temp}/temp.html",
                 )
 
-                self.read_html(f"{temp}/temp.html")
+                result.extend(self.read_html(f"{temp}/temp.html"))
 
-    def read_html(self, filename: str):
+                time.sleep(random())
+        return result
+
+    def read_html(self, filename: str) -> List[Video]:
+        result: List[Video] = []
+        pattern = r"~ (\d+-\d+-\d+)"
+        now = datetime.now()
+
         with open(filename, "r", encoding="utf-8") as f:
-            soup = HTMLParser(f.read(), "html.parser")
+            soup = HTMLParser(f.read())
             titles = soup.css("tr > td:nth-child(3)")  # 컨텐츠명
-            if not len(titles):
-                return
+            if not titles:
+                return result
             studied_times = soup.css("tr > td:nth-child(4)")  # 학습한 시간
             approved_times = soup.css("tr > td:nth-child(5)")  # 학습 인정 시간
             pf_statuses = soup.css("tr > td:nth-child(8)")  # P/F
 
             for i in range(len(titles)):
                 pf_status = pf_statuses[i].text(strip=True)
+                title = titles[i].text(strip=True)
+
                 if pf_status == "P":
+                    continue
+                current_video_due = datetime.strptime(
+                    re.search(pattern, title).group(1), "%Y-%m-%d"
+                )
+
+                # current_video_up, current_video_due = datetime.strptime(
+                #     dates[0], "%Y-%m-%d"
+                # ), datetime.strptime(dates[1], "%Y-%m-%d")
+                if (now - current_video_due).days > 0:
                     continue
 
                 studied_time = studied_times[i].text(strip=True)
                 if not studied_time:
-                    studied_time = "0초"
+                    if self.LANG == "ko":
+                        studied_time = "0초"
+                    else:
+                        studied_time = "0s"
+                approved_time = approved_times[i].text(strip=True)
+                if self.LANG != "ko":
+                    approved_time = approved_time.replace("시간", "h")
+                    approved_time = approved_time.replace("분", "m")
+                    approved_time = approved_time.replace("초", "s")
 
-                print(f"동영상: {titles[i].text(strip=True)}")
-                print(
-                    f"\t학습한 시간: {studied_time} | 학습인정 시간: {approved_times[i].text(strip=True)} | {pf_status}"
+                result.append(
+                    Video(
+                        title,
+                        studied_time,
+                        approved_time,
+                        pf_status,
+                        current_video_due,
+                    )
                 )
+
+                # print(f"동영상: {titles[i].text(strip=True)}")
+                # print(
+                #     f"\t학습한 시간: {studied_time} | 학습인정 시간: {approved_times[i].text(strip=True)} | {pf_status}"
+                # )
+
+        return result
 
     def exit(self):
         # print("\n종료 중...")
