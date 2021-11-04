@@ -105,6 +105,11 @@ class BlackBoard:
 
         # 로그인하기
         self.click_login()
+        try:
+            self.driver.switch_to.alert.accept()
+        except:
+            ...
+
         if self.LANG == "ko":
             print("[2/3] 로그인 완료...")
         else:

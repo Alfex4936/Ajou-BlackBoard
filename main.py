@@ -4,7 +4,6 @@ import re
 import sys
 import time
 import urllib.request
-import webbrowser
 from datetime import datetime, timedelta
 from operator import attrgetter
 from random import random
@@ -14,7 +13,6 @@ from urllib.parse import quote
 
 import win32api
 import yaml
-from pynotifier import Notification
 from selectolax.parser import HTMLParser
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -100,6 +98,10 @@ class BlackBoard:
 
         # 로그인하기
         self.click_login()
+        try:
+            self.driver.switch_to.alert.accept()
+        except:
+            ...
         print("[2/3] 로그인 완료...")
 
         WebDriverWait(self.driver, 20).until(
