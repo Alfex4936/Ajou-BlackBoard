@@ -24,6 +24,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Video:
+    __slots__ = ("name", "watched_time", "approve_time", "pf", "due_date")
     def __init__(self, name, watched_time, approve_time, pf, current_video_up):
         self.name = name
         self.watched_time = watched_time

@@ -274,7 +274,7 @@ class BlackBoard:
             )
         except Exception:
             self.exit()
-            sys.exit(0)
+            sys.exit(1)
 
         html = self.driver.page_source
         soup = HTMLParser(html)
