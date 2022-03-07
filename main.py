@@ -124,8 +124,9 @@ class BlackBoard:
             # )
 
             self.driver.find_element_by_xpath(
-                '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[5]/div/div[1]/button[1]'
+                '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[6]/div/div[1]/button[1]'
             ).send_keys(Keys.ENTER)
+        
 
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
@@ -160,7 +161,8 @@ class BlackBoard:
             self.conf["user"]["cls"] = classes
             with open("univ.yaml", "w") as f:
                 yaml.dump(self.conf, f)
-            time.sleep(1)
+            with open("./univ.yaml") as f:
+                self.conf = yaml.load(f, Loader=yaml.FullLoader)
 
         del last_parsed
 

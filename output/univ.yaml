@@ -5,5 +5,7 @@ user:
   cls:
   day: 3
   date: "2021-06-24"
-  id: 아이디
-  pw: 비밀번호
+  id: 아이디입력하세요
+  pw: 비밀번호입력하세요
+  lang: ko
+  student_id: 학번입력하세요

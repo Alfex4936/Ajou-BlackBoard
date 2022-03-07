@@ -4,15 +4,15 @@
 
 *개인 설정은 어디로 전송되지 않습니다. (로컬에서만 작동)*
 
-Windows (v1.0.6):
-[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.6/AjouBB_v1.0.6.zip)
+Windows (v1.0.7):
+[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.7/AjouBB_v1.0.7.zip)
 
 Linux (v1.0.3):
 [AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.3/AjouBlackBoard_v1.0.3_linux64.tar.xz)
 
 위에 파일을 다운로드 한 후 `univ.yaml`을 notepad나 텍스트 편집기로 열어서
 
-자신의 블랙보드 아이디와 비밀번호를 입력시킨다.
+자신의 블랙보드 아이디, 비밀번호와 학번을 입력시킨다.
 
 day옵션은 몇 일이내 공지까지 불러올 것인지 정한다. (ex. 0은 오늘 공지만)
 
