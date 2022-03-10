@@ -424,7 +424,7 @@ if __name__ == "__main__":
     options.add_argument("--log-level=3")
     options.add_argument("--headless")
     options.add_argument(
-        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     )
 
     bb = BlackBoard(options)

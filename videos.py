@@ -25,6 +25,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class Video:
     __slots__ = ("name", "watched_time", "approve_time", "pf", "due_date")
+
     def __init__(self, name, watched_time, approve_time, pf, current_video_up):
         self.name = name
         self.watched_time = watched_time
@@ -139,7 +140,7 @@ class BlackBoard:
             # )
 
             self.driver.find_element_by_xpath(
-                '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[5]/div/div[1]/button[1]'
+                '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[6]/div/div[1]/button[1]'
             ).send_keys(Keys.ENTER)
 
             WebDriverWait(self.driver, 20).until(
@@ -175,7 +176,8 @@ class BlackBoard:
             self.conf["user"]["cls"] = classes
             with open("univ.yaml", "w") as f:
                 yaml.dump(self.conf, f)
-            time.sleep(1)
+            with open("./univ.yaml") as f:
+                self.conf = yaml.load(f, Loader=yaml.FullLoader)
 
         del last_parsed
         self.CLEAR()
@@ -310,7 +312,7 @@ if __name__ == "__main__":
     options.add_argument("--log-level=3")
     options.add_argument("--headless")
     options.add_argument(
-        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     )
 
     bb = BlackBoard(options)
