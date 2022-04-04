@@ -60,7 +60,11 @@ class BlackBoard:
     LANG = conf["user"]["lang"]
 
     def __init__(self, options):
-        print("[1/3] 아주대학교 사이트 접속 하는 중...")
+        if self.LANG == "ko":
+            print("[1/3] 아주대학교 사이트 접속 하는 중...")
+        else:
+            print("[1/3] Entering ajou bb website...")
+
         self.driver = webdriver.Chrome(
             resource_path(
                 ChromeDriverManager(
@@ -102,13 +106,20 @@ class BlackBoard:
             self.driver.switch_to.alert.accept()
         except:
             ...
-        print("[2/3] 로그인 완료...")
+
+        if self.LANG == "ko":
+            print("[2/3] 로그인 완료...")
+        else:
+            print("[2/3] Logged in successfully...")
 
         WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
         )
 
-        print("[3/3] 수강 중인 강의 정리 중...")
+        if self.LANG == "ko":
+            print("[3/3] 수강 중인 강의 정리 중...")
+        else:
+            print("[3/3] Loading my courses in this semester...")
 
         # 한달마다 강의 체크
         now = datetime.now()
@@ -123,10 +134,12 @@ class BlackBoard:
             #     "https://eclass2.ajou.ac.kr/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_2_1&forwardUrl=detach_module%2F_22_1%2F"
             # )
 
-            self.driver.find_element_by_xpath(
-                '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[6]/div/div[1]/button[1]'
-            ).send_keys(Keys.ENTER)
-        
+            try:
+                self.driver.find_element_by_xpath(
+                    '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[6]/div/div[1]/button[1]'
+                ).send_keys(Keys.ENTER)
+            except Exception:
+                ...
 
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
