@@ -16,6 +16,7 @@ from selectolax.parser import HTMLParser
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -67,10 +68,12 @@ class BlackBoard:
             print("[1/3] Entering Ajou website...")
 
         self.driver = webdriver.Chrome(
-            resource_path(
-                ChromeDriverManager(
-                    log_level=0, cache_valid_range=1, print_first_line=False
-                ).install()
+            service=Service(
+                resource_path(
+                    ChromeDriverManager(
+                        log_level=0, cache_valid_range=1, print_first_line=False
+                    ).install()
+                )
             ),
             options=options,
         )
@@ -79,9 +82,9 @@ class BlackBoard:
 
     def click_login(self):
         # driver.find_element_by_name("userId").send_keys(Config.bb_id)
-        self.driver.find_element_by_name("userId").send_keys(self.conf["user"]["id"])
-        self.driver.find_element_by_name("password").send_keys(self.conf["user"]["pw"])
-        self.driver.find_element_by_xpath('//*[@id="loginSubmit"]').click()
+        self.driver.find_element(By.NAME, "userId").send_keys(self.conf["user"]["id"])
+        self.driver.find_element(By.NAME, "password").send_keys(self.conf["user"]["pw"])
+        self.driver.find_element(By.XPATH, '//*[@id="loginSubmit"]').click()
 
     def init_ajou(self):
         # 아주대 메인으로 이동하면 자동으로 로그인 홈페이지로 감
@@ -124,7 +127,7 @@ class BlackBoard:
         if self.LANG == "ko":
             print("[3/3] 수강 중인 강의 정리 중...")
         else:
-            print("[3/3] Organizing my lectures...")
+            print("[3/3] Loading my courses in this semester...")
 
         # 한달마다 강의 체크
         now = datetime.now()
@@ -156,8 +159,8 @@ class BlackBoard:
                 "div.element-details.summary > div.multi-column-course-id"
             )
 
-            courseIds = self.driver.find_elements_by_xpath(
-                '//*[contains(@id,"course-list-course-")]'
+            courseIds = self.driver.find_elements(
+                By.XPATH, '//*[contains(@id,"course-list-course-")]'
             )
 
             classes = []
@@ -301,9 +304,9 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
-    os.system(f"title Ajou BB v{__version__}")
+    os.system(f"title Ajou BB video v{__version__}")
 
     options = Options()
     options.add_experimental_option(
@@ -312,7 +315,7 @@ if __name__ == "__main__":
     options.add_argument("--log-level=3")
     options.add_argument("--headless")
     options.add_argument(
-        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
     )
 
     bb = BlackBoard(options)

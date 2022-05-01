@@ -91,10 +91,13 @@ class BlackBoard:
         try:
             self.driver.get(self.conf["link"]["bb"])
         except WebDriverException:
-            print("[ERR] 서버 오류, 나중에 다시 시도하세요.")
+            if self.LANG == "ko":
+                print("[ERR] 서버 오류, 나중에 다시 시도하세요.")
+            else:
+                print("[ERR] Server Error, please try it again.")
             self.exit()
             self.PAUSE()
-            sys.exit(0)
+            sys.exit(1)
 
         try:
             WebDriverWait(self.driver, 20).until(
@@ -102,7 +105,7 @@ class BlackBoard:
             )
         except Exception:
             self.exit()
-            sys.exit(0)
+            sys.exit(1)
 
         # 로그인하기
         self.click_login()
@@ -319,7 +322,10 @@ class BlackBoard:
             print("\n\t모든 할 일을 끝냈습니다.")
 
     def get_attendance(self):
-        print("\n>>>>>-----< 동영상 출석 현황 >-----<<<<<\n")
+        if self.LANG == "ko":
+            print("\n>>>>>-----< 동영상 출석 현황 >-----<<<<<\n")
+        else:
+            print("\n>>>>>-----< VIDEO ATTENDANCE STATUS >-----<<<<<\n")
 
         videos = sorted(self.__get_attendance(), key=attrgetter("due_date"))
 
