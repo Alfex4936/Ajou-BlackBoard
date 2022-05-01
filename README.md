@@ -1,11 +1,13 @@
 # 아주대학교 BB 파서
 
+## TODO
+1. append to txt files at %appdata%
 ## 사용법
 
 *개인 설정은 어디로 전송되지 않습니다. (로컬에서만 작동)*
 
-Windows (v1.0.7):
-[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.7/AjouBB_v1.0.7.zip)
+Windows (v1.0.8):
+[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.8/AjouBB_v1.0.8.zip)
 
 Linux (v1.0.3):
 [AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.3/AjouBlackBoard_v1.0.3_linux64.tar.xz)
