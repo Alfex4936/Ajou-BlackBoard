@@ -17,6 +17,7 @@ from selectolax.parser import HTMLParser
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -65,22 +66,25 @@ class BlackBoard:
         else:
             print("[1/3] Entering ajou bb website...")
 
-        self.driver = webdriver.Chrome(
+        dr = Service(
             resource_path(
                 ChromeDriverManager(
                     log_level=0, cache_valid_range=1, print_first_line=False
                 ).install()
-            ),
+            )
+        )
+
+        self.driver = webdriver.Chrome(
+            service=dr,
             options=options,
         )
         self.driver.implicitly_wait(5)
         self.day = 0 if self.conf["user"]["day"] < 0 else self.conf["user"]["day"]
 
     def click_login(self):
-        # driver.find_element_by_name("userId").send_keys(Config.bb_id)
-        self.driver.find_element_by_name("userId").send_keys(self.conf["user"]["id"])
-        self.driver.find_element_by_name("password").send_keys(self.conf["user"]["pw"])
-        self.driver.find_element_by_xpath('//*[@id="loginSubmit"]').click()
+        self.driver.find_element(By.NAME, "userId").send_keys(self.conf["user"]["id"])
+        self.driver.find_element(By.NAME, "password").send_keys(self.conf["user"]["pw"])
+        self.driver.find_element(By.XPATH, '//*[@id="loginSubmit"]').click()
 
     def get_notices(self):
         # 아주대 메인으로 이동하면 자동으로 로그인 홈페이지로 감
@@ -135,8 +139,9 @@ class BlackBoard:
             # )
 
             try:
-                self.driver.find_element_by_xpath(
-                    '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[6]/div/div[1]/button[1]'
+                self.driver.find_element(
+                    By.XPATH,
+                    '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[6]/div/div[1]/button[1]',
                 ).send_keys(Keys.ENTER)
             except Exception:
                 ...
@@ -154,8 +159,8 @@ class BlackBoard:
                 "div.element-details.summary > div.multi-column-course-id"
             )
 
-            courseIds = self.driver.find_elements_by_xpath(
-                '//*[contains(@id,"course-list-course-")]'
+            courseIds = self.driver.find_elements(
+                By.XPATH, '//*[contains(@id,"course-list-course-")]'
             )
 
             classes = []
@@ -426,7 +431,7 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    __version__ = "1.0.7"
+    __version__ = "1.0.8"
 
     os.system(f"title 아주대학교 블랙보드 v{__version__}")
 
@@ -437,7 +442,7 @@ if __name__ == "__main__":
     options.add_argument("--log-level=3")
     options.add_argument("--headless")
     options.add_argument(
-        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
     )
 
     bb = BlackBoard(options)
