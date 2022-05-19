@@ -56,6 +56,10 @@ class BlackBoard:
     with open("./univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
+    ORDINAL = lambda _, n: "%d%s" % (
+        n,
+        "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4],
+    )
     CLEAR = lambda _: os.system("cls")
     PAUSE = lambda _: os.system("pause")
     LANG = conf["user"]["lang"]
@@ -142,25 +146,39 @@ class BlackBoard:
             # )
 
             try:
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located(
+                        (
+                            By.CSS_SELECTOR,
+                            "button[ng-click='baseCourses.slideToPrevTerm()']",
+                        )
+                    )
+                )
                 self.driver.find_element(
-                    By.XPATH,
-                    '//*[@id="main-content-inner"]/div/div[1]/div[1]/div/div/div[6]/div/div[1]/button[1]',
-                ).send_keys(Keys.ENTER)
+                    By.CSS_SELECTOR, "button[ng-click='baseCourses.slideToPrevTerm()']"
+                ).click()
             except Exception:
                 ...
 
-            WebDriverWait(self.driver, 20).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
-            )
-
-            time.sleep(1.5)
+            # WebDriverWait(self.driver, 20).until(
+            #     EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
+            # )
 
             html = self.driver.page_source
             soup = HTMLParser(html)
             courseTitles = soup.css("a > h4.js-course-title-element")
+
+            while not courseTitles:
+                courseTitles = soup.css("a > h4.js-course-title-element")
+
             courseUIDs = soup.css(
                 "div.element-details.summary > div.multi-column-course-id"
-            )
+            )  # grid
+
+            if not courseUIDs:  # list
+                courseUIDs = soup.css(
+                    "div.element-details.summary > div.small-12 > div > span"
+                )
 
             courseIds = self.driver.find_elements(
                 By.XPATH, '//*[contains(@id,"course-list-course-")]'
@@ -185,17 +203,28 @@ class BlackBoard:
             with open("./univ.yaml") as f:
                 self.conf = yaml.load(f, Loader=yaml.FullLoader)
 
+        # time.sleep(3)
+        # self.exit()
+        # sys.exit(0)
+
         del last_parsed
-
-        # print(conf["user"]["cls"])
-
         diffDate = now - timedelta(self.day)
 
         totalPosts = 0
         self.CLEAR()
-        dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
-        dayMessage = f"오늘부터 ~ {diffDate.month}월 {diffDate.day}일"
-        print(f"\n\n\t>>> {dayMessage}까지 공지 불러오는 중...")
+        if self.LANG == "ko":
+            dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
+            dayMessage = f"오늘부터 ~ {diffDate.month}월 {diffDate.day}일"
+        else:
+            import calendar
+
+            dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
+            dayMessage = f"from Today to {calendar.month_abbr[diffDate.month]} {self.ORDINAL(diffDate.day)}"
+
+        if self.LANG == "ko":
+            print(f"\n\n\t>>> {dayMessage}까지 공지 불러오는 중...")
+        else:
+            print(f"\n\n\t>>> Loading {dayMessage}...")
 
         for i, ajouCls in enumerate(self.conf["user"]["cls"]):
             posts = 0
@@ -240,10 +269,16 @@ class BlackBoard:
                     totalPosts += 1
                     posts += 1
                     print()
-                    print(f">>>>>----- {posts}번째 공지")
+                    if self.LANG == "ko":
+                        print(f">>>>>----- {className} - {posts}번째 공지")
+                    else:
+                        print(f">>>>>----- {self.ORDINAL(posts)} notice of {className}")
                     print(f"\n{className}: {title.text(strip=True)}")
                     print()
-                    print(f"링크: {noticeLink}")
+                    if self.LANG == "ko":
+                        print(f"링크: {noticeLink}")
+                    else:
+                        print(f"Link: {noticeLink}")
                     print(
                         content.text(strip=False)
                         # .encode("utf-8", "ignore")
@@ -269,13 +304,25 @@ class BlackBoard:
 
         if totalPosts == 0:
             self.CLEAR()
-            print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
+            if self.LANG == "ko":
+                print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
+            else:
+                print(f"\n\n\tNo posts during {dayMessage}!!!\n")
         else:
-            print(f"총 {totalPosts}개의 공지")
+            if self.LANG == "ko":
+                print(f"총 {totalPosts}개의 공지")
+            else:
+                print(f"Total {totalPosts} notices")
             for lesson in self.conf["user"]["cls"]:
                 _, noticeLink, className, _, post = lesson.values()
                 if post > 0:
-                    print(f" └ {className}: {post}개의 공지")
+                    if self.LANG == "ko":
+                        print(f" └ {className}: {post}개의 공지")
+                    else:
+                        if post == 1:
+                            print(f" └ {className}: {post} notice")
+                        else:
+                            print(f" └ {className}: {post} notices")
             print()
 
         # self.PAUSE()
@@ -289,7 +336,11 @@ class BlackBoard:
         # self.CLEAR()
 
         # print("\n\n해야할 목록을 불러오는 중...")
-        print("\n>>>>>-----< 제공 예정 >-----<<<<<\n")
+        if self.LANG == "ko":
+            print("\n>>>>>-----< 제공 예정 >-----<<<<<\n")
+        else:
+            print("\n>>>>>-----< TO-DO >-----<<<<<\n")
+
         self.driver.get("https://eclass2.ajou.ac.kr/ultra/stream")
         try:
             WebDriverWait(self.driver, 20).until(
@@ -316,10 +367,16 @@ class BlackBoard:
         for i in range(n):
             print(classNames[i].text(strip=False))
             print("\t" + dueContents[i].text(strip=False))
-            print("\t지정 마감일:" + dueDates[i].text(strip=False))
+            if self.LANG == "ko":
+                print("\t지정 마감일: " + dueDates[i].text(strip=False))
+            else:
+                print("\tDue: " + dueDates[i].text(strip=False))
             print()
         if n == 0:
-            print("\n\t모든 할 일을 끝냈습니다.")
+            if self.LANG == "ko":
+                print("\n\t모든 할 일을 끝냈습니다.")
+            else:
+                print("\n\tNothing to do.")
 
     def get_attendance(self):
         if self.LANG == "ko":
@@ -437,7 +494,7 @@ if __name__ == "__main__":
     #             f.write(string)
     #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
     #             exit(1)
-    __version__ = "1.0.8"
+    __version__ = "1.0.9"
 
     os.system(f"title 아주대학교 블랙보드 v{__version__}")
 

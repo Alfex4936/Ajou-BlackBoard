@@ -6,8 +6,8 @@
 
 *개인 설정은 어디로 전송되지 않습니다. (로컬에서만 작동)*
 
-Windows (v1.0.8):
-[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.8/AjouBB_v1.0.8.zip)
+Windows (v1.0.9):
+[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.9/AjouBB_v1.0.9.zip)
 
 Linux (v1.0.3):
 [AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.3/AjouBlackBoard_v1.0.3_linux64.tar.xz)
