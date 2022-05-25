@@ -160,29 +160,10 @@ class BlackBoard:
             except Exception:
                 ...
 
-            # WebDriverWait(self.driver, 20).until(
-            #     EC.presence_of_element_located((By.CLASS_NAME, "course-org-list"))
-            # )
+            courseTitles, courseUIDs, courseIds = self.__load_classes()
 
-            html = self.driver.page_source
-            soup = HTMLParser(html)
-            courseTitles = soup.css("a > h4.js-course-title-element")
-
-            while not courseTitles:
-                courseTitles = soup.css("a > h4.js-course-title-element")
-
-            courseUIDs = soup.css(
-                "div.element-details.summary > div.multi-column-course-id"
-            )  # grid
-
-            if not courseUIDs:  # list
-                courseUIDs = soup.css(
-                    "div.element-details.summary > div.small-12 > div > span"
-                )
-
-            courseIds = self.driver.find_elements(
-                By.XPATH, '//*[contains(@id,"course-list-course-")]'
-            )
+            while not courseTitles or not courseUIDs or not courseIds:
+                courseTitles, courseUIDs, courseIds = self.__load_classes()
 
             classes = []
 
@@ -331,6 +312,30 @@ class BlackBoard:
         self.exit()
         self.PAUSE()
         sys.exit(0)
+
+    def __load_classes(self):
+        html = self.driver.page_source
+        soup = HTMLParser(html)
+        courseTitles = soup.css("a > h4.js-course-title-element")
+        courseUIDs = soup.css(
+            "div.element-details.summary > div.multi-column-course-id"
+        )  # grid
+
+        if not courseUIDs:  # list
+            courseUIDs = soup.css(
+                "div.element-details.summary > div.small-12 > div > span"
+            )
+
+        courseIds = self.driver.find_elements(
+            By.XPATH, '//*[contains(@id,"course-list-course-")]'
+        )
+
+        try:
+            courseIds[0].get_attribute("id")
+        except Exception:
+            return self.__load_classes()
+
+        return courseTitles, courseUIDs, courseIds
 
     def get_todos(self):
         # self.CLEAR()
@@ -496,7 +501,8 @@ if __name__ == "__main__":
     #             exit(1)
     __version__ = "1.0.9"
 
-    os.system(f"title 아주대학교 블랙보드 v{__version__}")
+    os.system("chcp 65001 > nul")
+    os.system(f"title Ajou BlackBoard v{__version__}")
 
     options = Options()
     options.add_experimental_option(
