@@ -11,7 +11,6 @@ from tempfile import TemporaryDirectory
 from typing import List
 from urllib.parse import quote
 
-import win32api
 import yaml
 from selectolax.parser import HTMLParser
 from selenium import webdriver
@@ -51,7 +50,6 @@ def resource_path(another_way):
         )  # When the code in run from python console, it runs through this exception.
     return os.path.join(usual_way, another_way)
 
-
 class BlackBoard:
     with open("./univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
@@ -60,8 +58,8 @@ class BlackBoard:
         n,
         "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4],
     )
-    CLEAR = lambda _: os.system("cls")
-    PAUSE = lambda _: os.system("pause")
+    CLEAR = lambda _: os.system("clear")
+    PAUSE = lambda _: os.system('/bin/bash -c \"read -sp \'Press [Enter] to finish\n\' -n 1 key\"')
     LANG = conf["user"]["lang"]
 
     def __init__(self, options):
@@ -486,24 +484,10 @@ class BlackBoard:
 
 
 if __name__ == "__main__":
-    #     if not Path("./univ.yaml").is_file():
-    #         with open("univ.yaml", "a") as f:
-    #             string = """link:
-    #   bb: https://eclass2.ajou.ac.kr/ultra/course
-    #   web: https://eclass2.ajou.ac.kr/webapps/blackboard/execute/announcement?method=search&context=course_entry&handle=announcements_entry&mode=view&course_id=
-    # user:
-    #   cls:
-    #   id:
-    #   pw:
-    # """
-    #             f.write(string)
-    #             print("BB 아이디와 비밀번호를 입력하고 다시 실행하세요.")
-    #             exit(1)
-    __version__ = "1.0.9"
+    __version__ = "1.0.9-linux"
 
-    os.system("chcp 65001 > nul")
-    os.system(f"title Ajou BlackBoard v{__version__}")
-
+    os.system(f'/bin/bash -c \"echo -ne \'\033]0;AjouBB v{__version__}\007\'\"')
+    
     options = Options()
     options.add_experimental_option(
         "excludeSwitches", ["enable-logging"]
@@ -511,12 +495,10 @@ if __name__ == "__main__":
     options.add_argument("--log-level=3")
     options.add_argument("--headless")
     options.add_argument(
-        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
+        "User-Agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36"
     )
+    options.add_argument("incognito")
 
     bb = BlackBoard(options)
-
-    # windows에서 콘솔 앱 종료 버튼 누를 때
-    win32api.SetConsoleCtrlHandler(bb.exit, True)
 
     bb.get_notices()
