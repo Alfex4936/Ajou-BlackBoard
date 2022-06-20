@@ -1,5 +1,7 @@
 # 아주대학교 BB 파서
 
+![스크린샷, 2022-06-20 14-54-27](https://user-images.githubusercontent.com/2356749/174534648-b7fb604a-490b-4709-9bca-9abcea53c5df.png)
+
 ## TODO
 1. append to txt files at %appdata%
 ## 사용법
