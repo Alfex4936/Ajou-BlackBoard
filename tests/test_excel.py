@@ -1,7 +1,5 @@
-import concurrent.futures
 import re
 import tempfile
-import threading
 import time
 import urllib.request
 from concurrent import futures
@@ -134,7 +132,6 @@ def load(student_id: str, a_class: Dict[str, str], result: List[Video]):
 
 
 def test_multi_download():
-
     with open("univ.yaml") as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 

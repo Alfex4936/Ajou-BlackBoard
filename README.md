@@ -2,14 +2,14 @@
 
 ![스크린샷, 2022-06-20 14-54-27](https://user-images.githubusercontent.com/2356749/174534648-b7fb604a-490b-4709-9bca-9abcea53c5df.png)
 
-## TODO
-1. append to txt files at %appdata%
+![제목 없음](https://user-images.githubusercontent.com/2356749/189145106-dcab33c8-3b7a-424e-8673-86a9a2f8f218.png)
+
 ## 사용법
 
 *개인 설정은 어디로 전송되지 않습니다. (로컬에서만 작동)*
 
-Windows (v1.0.9):
-[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.0.9/AjouBB_v1.0.9.zip)
+Windows (v1.1.0):
+[AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.1.0/AjouBB_v1.1.0.zip)
 
 Linux x64 (v1.0.9): [linux 브랜치 참고]
 [AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/raw/linux/output/AjouBlackBoard_v1.0.9_x64.tar.tar.xz)
