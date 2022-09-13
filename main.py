@@ -2,13 +2,13 @@ import locale
 import os
 import re
 import sys
-import urllib.request
 from concurrent import futures
 from datetime import datetime, timedelta
 from operator import attrgetter
 from tempfile import TemporaryDirectory
 from typing import Dict, List
 from urllib.parse import quote
+from urllib.request import urlretrieve
 
 import win32api
 import yaml
@@ -24,6 +24,7 @@ from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 from webdriver_manager.chrome import ChromeDriverManager
 
 os.environ["WDM_LOG"] = "0"
+pl = sys.platform
 
 
 class Video:
@@ -56,8 +57,13 @@ class BlackBoard:
         n,
         "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4],
     )
-    CLEAR = lambda _: os.system("cls")
-    PAUSE = lambda _: os.system("pause")
+
+    CLEAR = lambda _: os.system("cls" if pl == "win32" else "clear")
+    PAUSE = lambda _: os.system(
+        "pause"
+        if pl == "win32"
+        else "/bin/bash -c \"read -sp 'Press [Enter] to finish\n' -n 1 key\""
+    )
 
     def __init__(self, options):
         with open("./univ.yaml") as f:
@@ -254,12 +260,12 @@ class BlackBoard:
         self.CLEAR()
         if self.LANG == "ko":
             dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
-            dayMessage = f"오늘부터 ~ {diffDate.month}월 {diffDate.day}일"
+            dayMessage = f"{diffDate.month}월 {diffDate.day}일부터 ~ 오늘"
         else:
             import calendar
 
             dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
-            dayMessage = f"from Today to {calendar.month_abbr[diffDate.month]} {self.ORDINAL(diffDate.day)}"
+            dayMessage = f"from {calendar.month_abbr[diffDate.month]} {self.ORDINAL(diffDate.day)} to Today"
 
             del calendar
 
@@ -299,6 +305,13 @@ class BlackBoard:
                 if not postDate:
                     continue
 
+                contained_links: Dict[str, str] = dict()
+
+                for node in content.iter():
+                    href = node.css_first("a")
+                    if href:
+                        contained_links[node.text(strip=True)] = href.attrs["href"]  # type: ignore
+
                 try:
                     parsedDate = datetime.strptime(postDate, "%Y년%m월%d일")
                 except ValueError:  # 영문 강의 ex) September14,2021
@@ -332,6 +345,15 @@ class BlackBoard:
                         # .encode("utf-8", "ignore")
                         # .decode("utf-8")  emoji는 가능하나, conhost에서 자체적으로 chcp 65001을 해야함
                     )
+                    links = "\n".join(
+                        list(
+                            f"\t{text} \[ {link} ]"  # [something] doesn't print
+                            for (text, link) in contained_links.items()
+                        )
+                    )
+                    print(links)
+                    # print(f"\n포함된 링크:\n{links if links else '없음'}\n")
+                    pprint(f"\n포함된 링크:\n{links if links else '없음'}\n")
                     print(f"{date}\n")
                     print("-" * 50)
                 else:
@@ -369,6 +391,7 @@ class BlackBoard:
         self.driver.find_element(By.NAME, "userId").send_keys(self.conf["user"]["id"])
         self.driver.find_element(By.NAME, "password").send_keys(self.conf["user"]["pw"])
         self.driver.find_element(By.XPATH, '//*[@id="loginSubmit"]').click()
+        # alert 뜨면 틀린 비번
 
     @staticmethod
     def __reset_yaml():
@@ -582,7 +605,7 @@ user:
         uid = a_class["uid"]
 
         with TemporaryDirectory() as temp:
-            urllib.request.urlretrieve(
+            urlretrieve(
                 f"https://eclass2.ajou.ac.kr/webapps/bbgs-OnlineAttendance-BB5ff5398b9f3ea/excel?selectedUserId={student_id}&crs_batch_uid={uid}&title={student_id}&column={quote('사용자명,위치,컨텐츠명,학습한시간,학습인정시간,컨텐츠시간,온라인출석진도율,온라인출석상태(P/F)')}",
                 f"{temp}/test.html",
             )
@@ -597,10 +620,13 @@ user:
 
 
 if __name__ == "__main__":
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
-    os.system("chcp 65001 > nul")
-    os.system(f"title Ajou BlackBoard v{__version__}")
+    if pl == "win32":
+        os.system("chcp 65001 > nul")
+        os.system(f"title AjouBB v{__version__}")
+    else:
+        os.system(f"/bin/bash -c \"echo -ne '\033]0;AjouBB v{__version__}\007'\"")
 
     options = Options()
     options.add_experimental_option(
@@ -615,7 +641,8 @@ if __name__ == "__main__":
 
     bb = BlackBoard(options)
 
-    # windows에서 콘솔 앱 종료 버튼 누를 때
-    win32api.SetConsoleCtrlHandler(bb.exit, True)
+    if pl == "win32":
+        # windows에서 콘솔 앱 종료 버튼 누를 때
+        win32api.SetConsoleCtrlHandler(bb.exit, True)
 
     bb.run()
