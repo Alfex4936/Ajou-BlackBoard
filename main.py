@@ -108,8 +108,14 @@ class BlackBoard:
             sys.exit(1)
 
         # 로그인하기
-        self.click_login()
-        try:
+        is_good_id = self.click_login()
+        if not is_good_id:
+            print(f"[ERROR] {self.driver.switch_to.alert.text}")
+            self.driver.switch_to.alert.accept()
+            self.exit()
+            self.PAUSE()
+            sys.exit(1)
+        try:  # 중복된 로그인
             self.driver.switch_to.alert.accept()
         except:
             ...
@@ -184,10 +190,17 @@ class BlackBoard:
             )
         except Exception:
             self.exit()
+            self.PAUSE()
             sys.exit(1)
 
         # 로그인하기
-        self.click_login()
+        is_good_id = self.click_login()
+        if not is_good_id:
+            print(self.driver.switch_to.alert.text)
+            self.driver.switch_to.alert.accept()
+            self.exit()
+            self.PAUSE()
+            sys.exit(1)
         try:
             self.driver.switch_to.alert.accept()
         except:
@@ -351,7 +364,6 @@ class BlackBoard:
                             for (text, link) in contained_links.items()
                         )
                     )
-                    print(links)
                     # print(f"\n포함된 링크:\n{links if links else '없음'}\n")
                     pprint(f"\n포함된 링크:\n{links if links else '없음'}\n")
                     print(f"{date}\n")
@@ -387,11 +399,18 @@ class BlackBoard:
 
         # self.PAUSE()
 
-    def click_login(self):
+    def click_login(self) -> bool:
         self.driver.find_element(By.NAME, "userId").send_keys(self.conf["user"]["id"])
         self.driver.find_element(By.NAME, "password").send_keys(self.conf["user"]["pw"])
         self.driver.find_element(By.XPATH, '//*[@id="loginSubmit"]').click()
         # alert 뜨면 틀린 비번
+        try:
+            alert_msg = self.driver.switch_to.alert.text
+            if "틀렸습니다" in alert_msg or "아닙니다" in alert_msg:
+                return False
+        except:
+            ...
+        return True
 
     @staticmethod
     def __reset_yaml():
