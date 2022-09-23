@@ -1,16 +1,15 @@
-import locale
 import os
 import re
 import sys
 from concurrent import futures
 from datetime import datetime, timedelta
+from locale import LC_ALL, setlocale
 from operator import attrgetter
 from tempfile import TemporaryDirectory
 from typing import Dict, List
 from urllib.parse import quote
 from urllib.request import urlretrieve
 
-import win32api
 import yaml
 from rich import print as pprint
 from selectolax.parser import HTMLParser
@@ -25,6 +24,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 os.environ["WDM_LOG"] = "0"
 pl = sys.platform
+
+if pl == "win32":
+    import win32api
 
 
 class Video:
@@ -44,7 +46,7 @@ class Video:
         return self.pf == "P"
 
 
-def resource_path(another_way):
+def resource_path(another_way: str) -> str:
     try:
         usual_way = sys._MEIPASS  # type: ignore
     except Exception:
@@ -330,9 +332,9 @@ class BlackBoard:
                 except ValueError:  # 영문 강의 ex) September14,2021
                     postDate = "".join(date.split()[3:6])
                     # postDate = postDate.replace(",", "")
-                    locale.setlocale(locale.LC_ALL, "en")
+                    setlocale(LC_ALL, "en")
                     parsedDate = datetime.strptime(postDate, "%B%d,%Y")
-                    locale.setlocale(locale.LC_ALL, "Korean_Korea")
+                    setlocale(LC_ALL, "Korean_Korea")
 
                 if (self.now - parsedDate).days <= self.day:
                     total_posts += 1
