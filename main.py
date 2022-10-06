@@ -12,6 +12,9 @@ from urllib.request import urlretrieve
 
 import yaml
 from rich import print as pprint
+from rich.console import Console
+from rich.highlighter import RegexHighlighter
+from rich.theme import Theme
 from selectolax.parser import HTMLParser
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -27,6 +30,42 @@ pl = sys.platform
 
 if pl == "win32":
     import win32api
+
+
+class NoticeHighlighter(RegexHighlighter):
+    """My custom highlighter for AjouBB"""
+
+    base_style = "csw."
+    highlights = [
+        r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
+        r"(?P<student_id>\d{9})",  # 202209301
+        r"(?P<number>\d*번째 공지)",
+        r"(?P<url>(file|https|http|ws|wss)://[-0-9a-zA-Z$_+!`(),.?/;:&=%#]*)",
+        r"(?P<date>[0-9]+월.[0-9]+일(\s\(.*\))?)",  # 10월31일 (월)
+        r"(?P<time>\d{1,2}:\d{1,2})",
+        r"(?P<total_notice>총.*공지)",
+        r"(?P<per_course>(?<=└ ).*)",  # └ 강좌(X-1): 5개의 공지
+        r"(?P<class_name>(?<=----- ).*\))",  # >>>>>----- "CLASS(ABC-1)"
+        r"(?P<bold_green>제공 예정|동영상 출석 현황|.요일|결석|출석|기말|중간|과제|주제|조별|발표|성적|마감일|휴강|보강)",
+    ]
+
+
+theme = Theme(
+    {
+        "csw.email": "bold red",
+        "csw.student_id": "bold red",
+        "csw.url": "bold blue",
+        "csw.date": "bold yellow",
+        "csw.time": "bold yellow",
+        "csw.number": "bold green",
+        "csw.total_notice": "bold red",
+        "csw.per_course": "bold green",
+        "csw.class_name": "bold bright_cyan",
+        "csw.bold_green": "bold green",
+    }
+)
+
+console = Console(highlighter=NoticeHighlighter(), theme=theme)
 
 
 class Video:
@@ -77,7 +116,7 @@ class BlackBoard:
         else:
             print("[1/3] Entering ajou bb website...")
 
-        dr = Service(resource_path(ChromeDriverManager(cache_valid_range=1).install()))
+        dr = Service(resource_path(ChromeDriverManager(cache_valid_range=14).install()))
 
         self.driver = webdriver.Chrome(
             service=dr,
@@ -341,21 +380,19 @@ class BlackBoard:
                     posts += 1
                     print()
                     if self.LANG == "ko":
-                        pprint(
-                            f">>>>>----- [bold bright_cyan]{className}[/bold bright_cyan] - [red]{posts}[/red]번째 공지"
-                        )
+                        console.print(f">>>>>----- {className} - {posts}번째 공지")
                     else:
-                        pprint(
+                        console.print(
                             f">>>>>----- [red]{self.ORDINAL(posts)}[/red] notice of [bold bright_cyan]{className}[/bold bright_cyan]"
                         )
                     print(f"\n{className}: {title.text(strip=True)}")
                     print()
                     if self.LANG == "ko":
-                        pprint(f"링크: {noticeLink}")
+                        console.print(f"링크: {noticeLink}")
                     else:
-                        pprint(f"Link: {noticeLink}")
+                        console.print(f"Link: {noticeLink}")
 
-                    pprint(
+                    console.print(
                         content.text(strip=False)
                         # .encode("utf-8", "ignore")
                         # .decode("utf-8")  emoji는 가능하나, conhost에서 자체적으로 chcp 65001을 해야함
@@ -367,8 +404,8 @@ class BlackBoard:
                         )
                     )
                     # print(f"\n포함된 링크:\n{links if links else '없음'}\n")
-                    pprint(f"\n포함된 링크:\n{links if links else '없음'}\n")
-                    print(f"{date}\n")
+                    console.print(f"\n포함된 링크:\n{links if links else '없음'}\n")
+                    console.print(f"{date}\n")
                     print("-" * 50)
                 else:
                     break
@@ -384,19 +421,19 @@ class BlackBoard:
                 print(f"\n\n\tNo posts during {dayMessage}!!!\n")
         else:
             if self.LANG == "ko":
-                pprint(f"총 [bold]{total_posts}[/bold]개의 공지")
+                console.print(f"총 {total_posts}개의 공지")
             else:
                 print(f"Total {total_posts} notices")
             for lesson in self.conf["user"]["cls"]:
                 _, noticeLink, className, _, post = lesson.values()
                 if post > 0:
                     if self.LANG == "ko":
-                        print(f" └ {className}: {post}개의 공지")
+                        console.print(f" └ {className}: {post}개의 공지")
                     else:
                         if post == 1:
-                            print(f" └ {className}: {post} notice")
+                            console.print(f" └ {className}: {post} notice")
                         else:
-                            print(f" └ {className}: {post} notices")
+                            console.print(f" └ {className}: {post} notices")
             print()
 
         # self.PAUSE()
@@ -493,7 +530,7 @@ user:
 
         # print("\n\n해야할 목록을 불러오는 중...")
         if self.LANG == "ko":
-            print("\n>>>>>-----< 제공 예정 >-----<<<<<\n")
+            console.print("\n>>>>>-----< 제공 예정 >-----<<<<<\n")
         else:
             print("\n>>>>>-----< TO-DO >-----<<<<<\n")
 
