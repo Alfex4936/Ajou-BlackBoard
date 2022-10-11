@@ -11,7 +11,6 @@ from urllib.parse import quote
 from urllib.request import urlretrieve
 
 import yaml
-from rich import print as pprint
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
 from rich.theme import Theme
@@ -46,7 +45,8 @@ class NoticeHighlighter(RegexHighlighter):
         r"(?P<total_notice>총.*공지)",
         r"(?P<per_course>(?<=└ ).*)",  # └ 강좌(X-1): 5개의 공지
         r"(?P<class_name>(?<=----- ).*\))",  # >>>>>----- "CLASS(ABC-1)"
-        r"(?P<bold_green>제공 예정|동영상 출석 현황|.요일|결석|출석|기말|중간|과제|주제|조별|발표|성적|마감일|휴강|보강)",
+        r"(?P<bold_green>제공 예정|동영상 출석 현황|.요일|출석|기말|중간|과제|주제|조별|발표|성적|마감일|휴강|보강|마감일)",
+        r"(?P<bold_red>결석|마감일|Due|적발|채점|않음|오류)",
     ]
 
 
@@ -62,6 +62,7 @@ theme = Theme(
         "csw.per_course": "bold green",
         "csw.class_name": "bold bright_cyan",
         "csw.bold_green": "bold green",
+        "csw.bold_red": "bold red",
     }
 )
 
@@ -106,6 +107,9 @@ class BlackBoard:
         else "/bin/bash -c \"read -sp 'Press [Enter] to finish\n' -n 1 key\""
     )
 
+    BB_LINK = "https://eclass2.ajou.ac.kr/ultra/course"
+    CLASS_LINK = "https://eclass2.ajou.ac.kr/webapps/blackboard/execute/announcement?method=search&context=course_entry&handle=announcements_entry&mode=view&course_id="
+
     def __init__(self, options):
         with open("./univ.yaml") as f:
             self.conf = yaml.load(f, Loader=yaml.FullLoader)
@@ -130,7 +134,7 @@ class BlackBoard:
         # 사이트 로딩
         # 아주대 메인으로 이동하면 자동으로 로그인 홈페이지로 감
         try:
-            self.driver.get(self.conf["link"]["bb"])
+            self.driver.get(self.BB_LINK)
         except WebDriverException:
             if self.LANG == "ko":
                 print("[ERR] 서버 오류, 나중에 다시 시도하세요.")
@@ -215,7 +219,7 @@ class BlackBoard:
     def debug(self):
         # 아주대 메인으로 이동하면 자동으로 로그인 홈페이지로 감
         try:
-            self.driver.get(self.conf["link"]["bb"])
+            self.driver.get(self.BB_LINK)
         except WebDriverException:
             if self.LANG == "ko":
                 print("[ERR] 서버 오류, 나중에 다시 시도하세요.")
@@ -328,6 +332,8 @@ class BlackBoard:
         else:
             print(f"\n\n\t>>> Loading {dayMessage}...")
 
+        sum_classes_have_notices = 0
+
         for i, ajouCls in enumerate(self.conf["user"]["cls"]):
             posts = 0
 
@@ -409,6 +415,8 @@ class BlackBoard:
                     print("-" * 50)
                 else:
                     break
+            if posts > 0:
+                sum_classes_have_notices += 1
             self.conf["user"]["cls"][i]["posts"] = posts  # 각 강의마다 공지 몇 개인지 체크
 
         # div.name > ng-switch > a
@@ -421,7 +429,7 @@ class BlackBoard:
                 print(f"\n\n\tNo posts during {dayMessage}!!!\n")
         else:
             if self.LANG == "ko":
-                console.print(f"총 {total_posts}개의 공지")
+                console.print(f"총 {sum_classes_have_notices}개의 수업에서 {total_posts}개의 공지")
             else:
                 print(f"Total {total_posts} notices")
             for lesson in self.conf["user"]["cls"]:
@@ -455,10 +463,7 @@ class BlackBoard:
     def __reset_yaml():
         # if not Path("./univ.yaml").is_file():
         with open("./univ.yaml", "w") as f:
-            string = """link:
-    bb: https://eclass2.ajou.ac.kr/ultra/course
-    web: https://eclass2.ajou.ac.kr/webapps/blackboard/execute/announcement?method=search&context=course_entry&handle=announcements_entry&mode=view&course_id=
-user:
+            string = """user:
     cls:
     date: '2022-01-01'
     day: 3
@@ -480,7 +485,7 @@ user:
                 "uid": uid.text(strip=True),
                 "id": cid.get_attribute("id")[19:],
                 "name": " ".join(link.text(strip=True).split()[1:]),
-                "link": self.conf["link"]["web"] + cid.get_attribute("id")[19:],
+                "link": self.CLASS_LINK + cid.get_attribute("id")[19:],
             }
             for link, uid, cid in zip(courseTitles, courseUIDs, courseIds)
         )  # tuple causes !!python: tuple
@@ -561,9 +566,9 @@ user:
             print(classNames[i].text(strip=False))
             print("\t" + dueContents[i].text(strip=False))
             if self.LANG == "ko":
-                print("\t지정 마감일: " + dueDates[i].text(strip=False))
+                console.print("\t지정 마감일: " + dueDates[i].text(strip=False))
             else:
-                print("\tDue: " + dueDates[i].text(strip=False))
+                console.print("\tDue: " + dueDates[i].text(strip=False))
             print()
         if n == 0:
             if self.LANG == "ko":
