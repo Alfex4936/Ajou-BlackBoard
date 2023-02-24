@@ -25,8 +25,8 @@ AjouBB makes staying on top of coursework a breeze, allowing students to focus o
 Windows (v1.1.1):
 [AjouBB.zip 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.1.1/AjouBB_v1.1.1.zip)
 
-Linux x64 (v1.0.9): [linux 브랜치 참고]
-[AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/raw/linux/output/AjouBlackBoard_v1.0.9_x64.tar.tar.xz)
+Linux amd64 (v1.1.1):
+[AjouBB.tar.xz 다운로드](https://github.com/Alfex4936/Ajou-BlackBoard/releases/download/v1.1.1/AjouBB_v1.1.1_linux.tar.xz)
 
 위에 파일을 다운로드 한 후 `univ.yaml`을 notepad나 텍스트 편집기로 열어서
 
