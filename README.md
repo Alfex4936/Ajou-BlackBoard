@@ -4,6 +4,20 @@
 
 ![제목 없음](https://user-images.githubusercontent.com/2356749/189145106-dcab33c8-3b7a-424e-8673-86a9a2f8f218.png)
 
+`AjouBB` is a Python project aimed at helping students at Ajou University keep track of their classes more efficiently.
+
+By using Selenium, the project automates the process of logging into BlackBoard, the online platform used by the university, and scrapes all relevant information for the student.
+
+The student ID and password are entered into the config.yaml file, and with just a few simple steps, AjouBB will retrieve the following information for the student:
+
+- All class notices from the current semester (within `days` config value)
+- A list of all upcoming, unfinished assignments
+- Videos to watch for attendance purposes
+
+This project saves students time and effort, as they no longer have to manually check each individual class page for updates and new assignments.
+
+AjouBB makes staying on top of coursework a breeze, allowing students to focus on their studies and excel in their classes.
+
 ## 사용법
 
 *개인 설정은 어디로 전송되지 않습니다. (로컬에서만 작동)*

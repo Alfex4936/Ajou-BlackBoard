@@ -95,18 +95,6 @@ def resource_path(another_way: str) -> str:
 
 
 class BlackBoard:
-    ORDINAL = lambda _, n: "%d%s" % (
-        n,
-        "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4],
-    )
-
-    CLEAR = lambda _: os.system("cls" if pl == "win32" else "clear")
-    PAUSE = lambda _: os.system(
-        "pause"
-        if pl == "win32"
-        else "/bin/bash -c \"read -sp 'Press [Enter] to finish\n' -n 1 key\""
-    )
-
     BB_LINK = "https://eclass2.ajou.ac.kr/ultra/course"
     CLASS_LINK = "https://eclass2.ajou.ac.kr/webapps/blackboard/execute/announcement?method=search&context=course_entry&handle=announcements_entry&mode=view&course_id="
 
@@ -141,7 +129,7 @@ class BlackBoard:
             else:
                 print("[ERR] Server Error, please try it again.")
             self.exit()
-            self.PAUSE()
+            self.pause_console()
             sys.exit(1)
 
         try:
@@ -158,7 +146,7 @@ class BlackBoard:
             print(f"[ERROR] {self.driver.switch_to.alert.text}")
             self.driver.switch_to.alert.accept()
             self.exit()
-            self.PAUSE()
+            self.pause_console()
             sys.exit(1)
         try:  # 중복된 로그인
             self.driver.switch_to.alert.accept()
@@ -212,8 +200,8 @@ class BlackBoard:
         )
         notification.send(block=False)
 
-        self.PAUSE()
         self.exit()
+        self.pause_console()
         sys.exit(0)
 
     def debug(self):
@@ -226,7 +214,7 @@ class BlackBoard:
             else:
                 print("[ERR] Server Error, please try it again.")
             self.exit()
-            self.PAUSE()
+            self.pause_console()
             sys.exit(1)
 
         try:
@@ -235,7 +223,7 @@ class BlackBoard:
             )
         except Exception:
             self.exit()
-            self.PAUSE()
+            self.pause_console()
             sys.exit(1)
 
         # 로그인하기
@@ -244,7 +232,7 @@ class BlackBoard:
             print(self.driver.switch_to.alert.text)
             self.driver.switch_to.alert.accept()
             self.exit()
-            self.PAUSE()
+            self.pause_console()
             sys.exit(1)
         try:
             self.driver.switch_to.alert.accept()
@@ -288,9 +276,25 @@ class BlackBoard:
         self.__reset_yaml()
         self.__update_yaml()
 
-        self.PAUSE()
         self.exit()
+        self.pause_console()
         sys.exit(0)
+
+    def to_ordinal(self, n):
+        return "%d%s" % (
+            n,
+            "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4],
+        )
+
+    def clear_console(self):
+        os.system("cls" if pl == "win32" else "clear")
+
+    def pause_console(self):
+        os.system(
+            "pause"
+            if pl == "win32"
+            else "/bin/bash -c \"read -sp 'Press [Enter] to finish\n' -n 1 key\""
+        )
 
     def get_notices(self):
         WebDriverWait(self.driver, 10).until(
@@ -315,7 +319,7 @@ class BlackBoard:
         diffDate = self.now - timedelta(self.day)
 
         total_posts = 0
-        self.CLEAR()
+        self.clear_console()
         if self.LANG == "ko":
             dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
             dayMessage = f"{diffDate.month}월 {diffDate.day}일부터 ~ 오늘"
@@ -323,7 +327,7 @@ class BlackBoard:
             import calendar
 
             dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
-            dayMessage = f"from {calendar.month_abbr[diffDate.month]} {self.ORDINAL(diffDate.day)} to Today"
+            dayMessage = f"from {calendar.month_abbr[diffDate.month]} {self.to_ordinal(diffDate.day)} to Today"
 
             del calendar
 
@@ -389,7 +393,7 @@ class BlackBoard:
                         console.print(f">>>>>----- {className} - {posts}번째 공지")
                     else:
                         console.print(
-                            f">>>>>----- [red]{self.ORDINAL(posts)}[/red] notice of [bold bright_cyan]{className}[/bold bright_cyan]"
+                            f">>>>>----- [red]{self.to_ordinal(posts)}[/red] notice of [bold bright_cyan]{className}[/bold bright_cyan]"
                         )
                     print(f"\n{className}: {title.text(strip=True)}")
                     print()
@@ -422,7 +426,7 @@ class BlackBoard:
         # div.name > ng-switch > a
 
         if total_posts == 0:
-            self.CLEAR()
+            self.clear_console()
             if self.LANG == "ko":
                 print(f"\n\n\t{dayMessage} 이내 공지가 없네요!!!\n")
             else:
@@ -444,7 +448,7 @@ class BlackBoard:
                             console.print(f" └ {className}: {post} notices")
             print()
 
-        # self.PAUSE()
+        # self.pause_console()
 
     def click_login(self) -> bool:
         self.driver.find_element(By.NAME, "userId").send_keys(self.conf["user"]["id"])
@@ -531,7 +535,7 @@ class BlackBoard:
         return courseTitles, courseUIDs, courseIds
 
     def get_todos(self):
-        # self.CLEAR()
+        # self.clear_console()
 
         # print("\n\n해야할 목록을 불러오는 중...")
         if self.LANG == "ko":
@@ -540,6 +544,19 @@ class BlackBoard:
             print("\n>>>>>-----< TO-DO >-----<<<<<\n")
 
         self.driver.get("https://eclass2.ajou.ac.kr/ultra/stream")
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "div.empty-note"))
+            )
+        except Exception:
+            ...  # ignore
+        else:
+            if self.LANG == "ko":
+                print("\n\t모든 할 일을 끝냈습니다.")
+            else:
+                print("\n\tNothing to do.")
+            return
+
         try:
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, ".js-title-link"))
@@ -550,6 +567,7 @@ class BlackBoard:
 
         html = self.driver.page_source
         soup = HTMLParser(html)
+
         dueContents = soup.css(
             "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.name > ng-switch > a"
         )
@@ -559,7 +577,7 @@ class BlackBoard:
         classNames = soup.css(
             "div.js-upcomingStreamEntries > ul > li > div > div > div > div > div.context.ellipsis > a"
         )
-        # self.CLEAR()
+        # self.clear_console()
 
         n = len(dueContents)
         for i in range(n):
