@@ -10,6 +10,7 @@ from typing import Dict, List
 from urllib.parse import quote
 from urllib.request import urlretrieve
 
+import win32api
 import yaml
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
@@ -23,12 +24,48 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.driver_cache import DriverCacheManager
 
 os.environ["WDM_LOG"] = "0"
-pl = sys.platform
+# Constants
+PL = sys.platform
+LANG = "ko"  # Set your language preference here
 
-if pl == "win32":
-    import win32api
+
+# class NoticeHighlighter(RegexHighlighter):
+#     """My custom highlighter for AjouBB"""
+
+#     base_style = "csw."
+#     highlights = [
+#         r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
+#         r"(?P<student_id>\d{9})",  # 202209301
+#         r"(?P<number>\d*번째 공지)",
+#         r"(?P<url>(file|https|http|ws|wss)://[-0-9a-zA-Z$_+!`(),.?/;:&=%#]*)",
+#         r"(?P<date>[0-9]+월.[0-9]+일(\s\(.*\))?)",  # 10월31일 (월)
+#         r"(?P<time>\d{1,2}:\d{1,2})",
+#         r"(?P<total_notice>총.*공지)",
+#         r"(?P<per_course>(?<=└ ).*)",  # └ 강좌(X-1): 5개의 공지
+#         r"(?P<class_name>(?<=----- ).*\))",  # >>>>>----- "CLASS(ABC-1)"
+#         r"(?P<bold_green>제공 예정|동영상 출석 현황|.요일|출석|기말|중간|과제|주제|조별|발표|성적|마감일|휴강|보강|마감일)",
+#         r"(?P<bold_red>결석|마감일|Due|적발|채점|않음|오류)",
+#     ]
+
+
+# theme = Theme(
+#     {
+#         "csw.email": "bold red",
+#         "csw.student_id": "bold red",
+#         "csw.url": "bold blue",
+#         "csw.date": "bold yellow",
+#         "csw.time": "bold yellow",
+#         "csw.number": "bold green",
+#         "csw.total_notice": "bold red",
+#         "csw.per_course": "bold green",
+#         "csw.class_name": "bold bright_cyan",
+#         "csw.bold_green": "bold green",
+#         "csw.bold_red": "bold red",
+#     }
+# )
 
 
 class NoticeHighlighter(RegexHighlighter):
@@ -37,32 +74,40 @@ class NoticeHighlighter(RegexHighlighter):
     base_style = "csw."
     highlights = [
         r"(?P<email>[\w-]+@([\w-]+\.)+[\w-]+)",
-        r"(?P<student_id>\d{9})",  # 202209301
+        r"(?P<student_id>\d{9})",
         r"(?P<number>\d*번째 공지)",
         r"(?P<url>(file|https|http|ws|wss)://[-0-9a-zA-Z$_+!`(),.?/;:&=%#]*)",
-        r"(?P<date>[0-9]+월.[0-9]+일(\s\(.*\))?)",  # 10월31일 (월)
+        r"(?P<date>[0-9]+월.[0-9]+일(\s\(.*\))?)",
         r"(?P<time>\d{1,2}:\d{1,2})",
         r"(?P<total_notice>총.*공지)",
-        r"(?P<per_course>(?<=└ ).*)",  # └ 강좌(X-1): 5개의 공지
-        r"(?P<class_name>(?<=----- ).*\))",  # >>>>>----- "CLASS(ABC-1)"
-        r"(?P<bold_green>제공 예정|동영상 출석 현황|.요일|출석|기말|중간|과제|주제|조별|발표|성적|마감일|휴강|보강|마감일)",
-        r"(?P<bold_red>결석|마감일|Due|적발|채점|않음|오류)",
+        r"(?P<per_course>(?<=└ ).*)",
+        r"(?P<class_name>(?<=----- ).*\))",
+        r"(?P<important_green>제공 예정|동영상 출석 현황|.요일|출석|기말|중간|과제|주제|조별|발표|성적|마감일|휴강|보강)",
+        r"(?P<important_red>결석|마감일|Due|적발|채점|않음|오류)",
+        r"(?P<course_list>내 수업 목록:)",
+        r"(?P<course_name>\b[\w가-힣]+과[가-힣]+\([\w-]+\)\b)",  # For course names like 자기이해와 진로탐색(X564-1)
+        r"(?P<course_code>\([\w-]+\))",  # For course codes like (X564-1)
+        r"(?P<special_action>봐야할 영상|모든 할 일을 끝냈습니다\.)",  # For special actions or notices
     ]
 
 
 theme = Theme(
     {
-        "csw.email": "bold red",
-        "csw.student_id": "bold red",
-        "csw.url": "bold blue",
-        "csw.date": "bold yellow",
-        "csw.time": "bold yellow",
+        "csw.email": "bold magenta",
+        "csw.student_id": "bold magenta",
+        "csw.url": "blue",
+        "csw.date": "italic yellow",
+        "csw.time": "yellow",
         "csw.number": "bold green",
         "csw.total_notice": "bold red",
-        "csw.per_course": "bold green",
-        "csw.class_name": "bold bright_cyan",
-        "csw.bold_green": "bold green",
-        "csw.bold_red": "bold red",
+        "csw.per_course": "green",
+        "csw.class_name": "bold cyan",
+        "csw.important_green": "bold green",
+        "csw.important_red": "bold red",
+        "csw.course_list": "bold underline",
+        "csw.course_name": "bold bright_white",
+        "csw.course_code": "italic bright_yellow",
+        "csw.special_action": "bold bright_magenta",
     }
 )
 
@@ -108,7 +153,13 @@ class BlackBoard:
         else:
             print("[1/3] Entering ajou bb website...")
 
-        dr = Service(resource_path(ChromeDriverManager(cache_valid_range=14).install()))
+        dr = Service(
+            resource_path(
+                ChromeDriverManager(
+                    cache_manager=DriverCacheManager(valid_range=1)
+                ).install()
+            )
+        )
 
         self.driver = webdriver.Chrome(
             service=dr,
@@ -150,7 +201,7 @@ class BlackBoard:
             sys.exit(1)
         try:  # 중복된 로그인
             self.driver.switch_to.alert.accept()
-        except:
+        except Exception:
             ...
 
         if self.LANG == "ko":
@@ -287,12 +338,12 @@ class BlackBoard:
         )
 
     def clear_console(self):
-        os.system("cls" if pl == "win32" else "clear")
+        os.system("cls" if PL == "win32" else "clear")
 
     def pause_console(self):
         os.system(
             "pause"
-            if pl == "win32"
+            if PL == "win32"
             else "/bin/bash -c \"read -sp 'Press [Enter] to finish\n' -n 1 key\""
         )
 
@@ -320,6 +371,7 @@ class BlackBoard:
 
         total_posts = 0
         self.clear_console()
+
         if self.LANG == "ko":
             dayMessage = f"{self.day}일" if self.day > 0 else "오늘"
             dayMessage = f"{diffDate.month}월 {diffDate.day}일부터 ~ 오늘"
@@ -374,7 +426,7 @@ class BlackBoard:
                 for node in content.iter():
                     href = node.css_first("a")
                     if href:
-                        contained_links[node.text(strip=True)] = href.attrs["href"]  # type: ignore
+                        contained_links[node.text(strip=True)[:10] + "..."] = href.attrs["href"]  # type: ignore
 
                 try:
                     parsedDate = datetime.strptime(postDate, "%Y년%m월%d일")
@@ -447,6 +499,12 @@ class BlackBoard:
                         else:
                             console.print(f" └ {className}: {post} notices")
             print()
+
+        print("\n내 수업 목록:")
+        for my_class in self.conf["user"]["cls"]:
+            _, _, class_name, _, _ = my_class.values()  # here, posts
+            print(f"\t{class_name}")
+        print()
 
         # self.pause_console()
 
@@ -703,7 +761,7 @@ class BlackBoard:
 if __name__ == "__main__":
     __version__ = "1.1.1"
 
-    if pl == "win32":
+    if PL == "win32":
         os.system("chcp 65001 > nul")
         os.system(f"title AjouBB v{__version__}")
     else:
@@ -717,13 +775,17 @@ if __name__ == "__main__":
     options.add_argument("--headless")
     options.add_argument("--window-size=800,1024")  # more than 5 classes
     options.add_argument(
-        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
+        "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
     )
 
+    prefs = {
+        "profile.managed_default_content_settings.images": 2
+    }  # Block third-party images from loading on all websites
+    options.add_experimental_option("prefs", prefs)
     bb = BlackBoard(options)
 
-    if pl == "win32":
+    if PL == "win32":
         # windows에서 콘솔 앱 종료 버튼 누를 때
-        win32api.SetConsoleCtrlHandler(bb.exit, True)
+        win32api.SetConsoleCtrlHandler(bb.exit, True)  # type: ignore
 
     bb.run()
